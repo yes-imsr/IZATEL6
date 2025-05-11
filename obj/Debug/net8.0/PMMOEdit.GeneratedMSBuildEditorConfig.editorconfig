@@ -26,3 +26,6 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
 [C:/Users/acer3/RiderProjects/PMMOEdit/PMMOEdit/MainWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/acer3/RiderProjects/PMMOEdit/PMMOEdit/SkillsPage.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

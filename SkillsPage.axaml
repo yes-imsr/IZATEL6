@@ -1,0 +1,346 @@
+<UserControl
+    x:Class="PMMOEdit.SkillsPage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pmmoEdit="clr-namespace:PMMOEdit"
+    mc:Ignorable="d"
+    d:DesignWidth="800"
+    d:DesignHeight="450" 
+    xmlns:vm="clr-namespace:PMMOEdit"
+    x:DataType="pmmoEdit:SkillsPageViewModel">
+    <UserControl.DataContext>
+        <vm:SkillsPageViewModel/>
+    </UserControl.DataContext>
+
+    <UserControl.Resources>
+        <pmmoEdit:IntToColorConverter x:Key="IntToColorConverter"/>
+        <pmmoEdit:ImagePathConverter x:Key="ImagePathConverter"/>
+        <pmmoEdit:StringStartsWithConverter x:Key="StringStartsWithConverter"/>
+        <pmmoEdit:StringDoesNotStartWithConverter x:Key="StringDoesNotStartWithConverter"/>
+    </UserControl.Resources>
+    
+    <Grid RowDefinitions="Auto,*">
+        <StackPanel Grid.Row="0" Margin="20" Orientation="Horizontal" Spacing="10">
+            <TextBlock Name="HeaderText"
+                      Text="What would you like to do?"
+                      FontSize="24"
+                      FontWeight="Bold"
+                      Foreground="Black"
+                      VerticalAlignment="Center"/>
+            
+            <Button Name="NewFileButton"
+                    Content="New File"
+                    Classes="actionButton"/>
+            
+            <Button Name="EditFileButton"
+                    Content="Edit File"
+                    Classes="actionButton"/>
+            
+            <Button Name="NewExportButton"
+                    Content="New Export"
+                    Classes="actionButton"/>
+        </StackPanel>
+        
+        <Grid Grid.Row="1"
+              Margin="20"
+              ColumnDefinitions="250,*,300"
+              Name="SkillEditorGrid"
+              IsVisible="False">
+            <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1" CornerRadius="4">
+                <Grid RowDefinitions="Auto,*">
+                    <Button Grid.Row="0"
+                            Name="AddSkillButton"
+                            Content="Add New Skill"
+                            HorizontalAlignment="Stretch"
+                            Classes="actionButton"
+                            Margin="5"/>
+                    <ListBox Grid.Row="1"
+                             Name="SkillsList"
+                             ItemsSource="{Binding Skills}"
+                             SelectedItem="{Binding SelectedSkill}"
+                             Background="Transparent"
+                             Margin="5">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="4" 
+                                        Padding="10,5" 
+                                        Margin="2">
+                                    <Border.Background>
+                                        <SolidColorBrush Color="{Binding Color, Converter={StaticResource IntToColorConverter}}"/>
+                                    </Border.Background>
+                                    <TextBlock Text="{Binding Name}" 
+                                              HorizontalAlignment="Center" 
+                                              FontWeight="SemiBold"
+                                              Foreground="White"/>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+            <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1" Margin="10,0,0,0" CornerRadius="4">
+                <ScrollViewer>
+                    <StackPanel Margin="20" Spacing="15"
+                                IsVisible="{Binding SelectedSkill, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <StackPanel DataContext="{Binding SelectedSkill}">
+                            <DockPanel>
+                                <TextBlock Text="Skill Name:" Width="150" VerticalAlignment="Center"/>
+                                <TextBox Name="SkillName" Text="{Binding Name}"/>
+                            </DockPanel>
+                            <DockPanel>
+                                <TextBlock Text="Max Level:" Width="150" VerticalAlignment="Center"/>
+                                <NumericUpDown Name="MaxLevel"
+                                               Value="{Binding MaxLevel}"
+                                               Minimum="1"/>
+                            </DockPanel>
+                            <DockPanel>
+                                <TextBlock Text="Display Group Name:" Width="150" VerticalAlignment="Center"/>
+                                <CheckBox Name="DisplayGroupName" 
+                                          IsChecked="{Binding DisplayGroupName}"/>
+                            </DockPanel>
+                            <DockPanel>
+                                <TextBlock Text="Use Total Levels:" Width="150" VerticalAlignment="Center"/>
+                                <CheckBox Name="UseTotalLevels"
+                                          IsChecked="{Binding UseTotalLevels}"/>
+                            </DockPanel>
+                            <DockPanel>
+                                <TextBlock Text="Color (Hex):" Width="150" VerticalAlignment="Center"/>
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <TextBox Name="HexColorInput" 
+                                             Width="120"
+                                             Watermark="#RRGGBB" 
+                                             Text="{Binding ColorHex, Mode=TwoWay}" 
+                                             TextChanged="HexColorInput_TextChanged"/>
+                                    <Border Name="ColorPreview" 
+                                            Width="40" 
+                                            Height="40" 
+                                            CornerRadius="4"
+                                            BorderBrush="Gray"
+                                            BorderThickness="1"
+                                            Background="{Binding Color, Converter={StaticResource IntToColorConverter}}"
+                                            VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <DockPanel>
+                                <TextBlock Text="Show in List:" Width="150" VerticalAlignment="Center"/>
+                                <CheckBox Name="ShowInList"
+                                          IsChecked="{Binding ShowInList}"/>
+                            </DockPanel>
+                            <DockPanel>
+                                <TextBlock Text="Icon:" Width="150" VerticalAlignment="Center"/>
+                                <TextBox Name="Icon" Text="{Binding Icon}"/>
+                                <Button Content="Browse"
+                                        Name="BrowseIcon"
+                                        Classes="actionButton"
+                                        Margin="5,0,0,0"/>
+                            </DockPanel>
+                            <DockPanel>
+                                <TextBlock Text="Icon Size (px):" Width="150" VerticalAlignment="Center"/>
+                                <NumericUpDown Name="IconSize"
+                                               Value="{Binding IconSize}"
+                                               Minimum="1"/>
+                            </DockPanel>
+                            <DockPanel>
+                                <TextBlock Text="No AFK Penalty:" Width="150" VerticalAlignment="Center"/>
+                                <CheckBox Name="NoAfkPenalty"
+                                          IsChecked="{Binding NoAfkPenalty}"/>
+                            </DockPanel>
+                            <Button Name="SaveSkill"
+                                    Content="Save Skill"
+                                    Classes="actionButton"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,20,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+            <Border Grid.Column="2" BorderBrush="Gray" BorderThickness="1" Margin="10,0,0,0" CornerRadius="4">
+                <ScrollViewer>
+                    <StackPanel Margin="20" Spacing="15"
+                                IsVisible="{Binding SelectedSkill, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <TextBlock Name="SummaryTitle"
+                                   Text="{Binding SelectedSkill.Name}" 
+                                   FontSize="18" 
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{Binding SelectedSkill.Color, Converter={StaticResource IntToColorConverter}}"
+                                   Margin="0,0,0,10"/>
+                                   
+                        <StackPanel DataContext="{Binding SelectedSkill}">
+                            <!-- Skill Display -->
+                            <Border Background="{Binding Color, Converter={StaticResource IntToColorConverter}}"
+                                    CornerRadius="4"
+                                    Padding="10"
+                                    Margin="0,0,0,10">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Text="{Binding Name}" 
+                                               FontSize="20" 
+                                               FontWeight="Bold"
+                                               Foreground="White"
+                                               HorizontalAlignment="Center"/>
+                                    <Image Width="80" 
+                                           Height="80" 
+                                           Margin="0,10,0,0" 
+                                           Source="{Binding Icon, Converter={StaticResource ImagePathConverter}}"
+                                           Stretch="Uniform"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                        <Image.IsVisible>
+                                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                <Binding Path="Icon" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                                                <Binding Path="Icon" Converter="{StaticResource StringDoesNotStartWithConverter}" ConverterParameter="pmmo:"/>
+                                            </MultiBinding>
+                                        </Image.IsVisible>
+                                    </Image>
+                                    <Border Width="80" 
+                                            Height="80" 
+                                            Margin="0,10,0,0"
+                                            Background="#20FFFFFF"
+                                            BorderBrush="#80FFFFFF"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="Resource Pack Icon"
+                                                   Foreground="White"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   TextWrapping="Wrap"
+                                                   TextAlignment="Center"/>
+                                        <Border.IsVisible>
+                                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                <Binding Path="Icon" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                                                <Binding Path="Icon" Converter="{StaticResource StringStartsWithConverter}" ConverterParameter="pmmo:"/>
+                                            </MultiBinding>
+                                        </Border.IsVisible>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                            <DockPanel Margin="0,5">
+                                <TextBlock Text="Max Level:" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding MaxLevel}" Margin="5,0,0,0"/>
+                            </DockPanel>
+                            <Border Background="#f0f0f0"
+                                    CornerRadius="4"
+                                    Padding="10"
+                                    Margin="0,10">
+                                <StackPanel>
+                                    <TextBlock Text="Display Options" 
+                                               FontWeight="Bold"
+                                               Margin="0,0,0,5"/>
+                                               
+                                    <DockPanel Margin="5,2">
+                                        <TextBlock Text="Show In List:"/>
+                                        <TextBlock Text="{Binding ShowInList}" Margin="5,0,0,0"/>
+                                    </DockPanel>
+                                    
+                                    <DockPanel Margin="5,2">
+                                        <TextBlock Text="Display Group Name:"/>
+                                        <TextBlock Text="{Binding DisplayGroupName}" Margin="5,0,0,0"/>
+                                    </DockPanel>
+                                    
+                                    <DockPanel Margin="5,2">
+                                        <TextBlock Text="Use Total Levels:"/>
+                                        <TextBlock Text="{Binding UseTotalLevels}" Margin="5,0,0,0"/>
+                                    </DockPanel>
+                                    
+                                    <DockPanel Margin="5,2">
+                                        <TextBlock Text="No AFK Penalty:"/>
+                                        <TextBlock Text="{Binding NoAfkPenalty}" Margin="5,0,0,0"/>
+                                    </DockPanel>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#f0f0f0"
+                                    CornerRadius="4"
+                                    Padding="10"
+                                    Margin="0,5"
+                                    IsVisible="{Binding Icon, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <StackPanel>
+                                    <TextBlock Text="Icon Information" 
+                                               FontWeight="Bold"
+                                               Margin="0,0,0,5"/>
+                                               
+                                    <DockPanel Margin="5,2">
+                                        <TextBlock Text="Icon Path:"/>
+                                        <TextBlock Text="{Binding Icon}" 
+                                                   TextWrapping="Wrap"
+                                                   Margin="5,0,0,0"/>
+                                    </DockPanel>                                 
+                                    <DockPanel Margin="5,2">
+                                        <TextBlock Text="Icon Size:"/>
+                                        <TextBlock Text="{Binding IconSize}" Margin="5,0,0,0"/>
+                                    </DockPanel>
+                                </StackPanel>
+                            </Border>
+                            <Button Name="DeleteSkillButton"
+                                    Content="Delete Skill"
+                                    Margin="10,0"
+                                    Padding="15,5"
+                                    Foreground="Red"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+    
+    <UserControl.Styles>
+        <Style Selector="ListBox">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        
+        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        
+        <Style Selector="ListBoxItem:pointerover Border">
+            <Setter Property="Opacity" Value="0.8"/>
+        </Style>
+        
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        
+        <Style Selector="ListBoxItem:selected Border">
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="ListBoxItem Border">
+            <Setter Property="Background" Value="#444444"/>
+        </Style>
+        
+        <Style Selector="Button.actionButton">
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        
+        <Style Selector="Button.actionButton:pointerover">
+            <Setter Property="Background" Value="#333333"/>
+            <Setter Property="RenderTransform" Value="scale(1.05)"/>
+        </Style>
+        
+        <Style Selector="Button.actionButton:pressed">
+            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="RenderTransform" Value="scale(0.95)"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

@@ -13,10 +13,22 @@
         <PackageReference Include="Avalonia.Desktop" Version="11.2.7"/>
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.7"/>
         <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.7"/>
+        <PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.2.7"/>
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
         <PackageReference Include="Avalonia.Diagnostics" Version="11.2.7">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Assets\" />
+      <Folder Include="Exports\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="SkillsPage.axaml.cs">
+        <DependentUpon>SkillsPage.axaml</DependentUpon>
+      </Compile>
     </ItemGroup>
 </Project>
