@@ -96,11 +96,9 @@ public partial class SkillsPage : UserControl
             {
         if (ViewModel.SelectedSkill != null && sender is Avalonia.Controls.ColorPicker)
         {
-            // Convert Avalonia color to integer RGB color value
             var color = e.NewColor;
             int colorValue = (color.R << 16) | (color.G << 8) | color.B;
             
-            // Update the skill's color property
             ViewModel.SelectedSkill.Color = colorValue;
         }
     }

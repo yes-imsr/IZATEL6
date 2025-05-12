@@ -86,7 +86,6 @@ namespace PMMOEdit
         {
             get
             {
-                // Convert integer color to hex string
                 byte r = (byte)((Color >> 16) & 0xFF);
                 byte g = (byte)((Color >> 8) & 0xFF);
                 byte b = (byte)(Color & 0xFF);
@@ -96,7 +95,6 @@ namespace PMMOEdit
             {
                 if (value != null && value.StartsWith("#") && value.Length == 7)
                 {
-                    // Remove # and parse hex
                     string hexColor = value.Substring(1);
                     if (int.TryParse(hexColor, System.Globalization.NumberStyles.HexNumber, null, out int colorValue))
                     {

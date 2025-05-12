@@ -9,10 +9,7 @@ public static class SkillHelper
         var indent = new string(' ', indentationLevel * 4);
         var sb = new StringBuilder();
 
-        // Add skill header
         sb.AppendLine($"{indent}[Skills.Entry.{skill.Name}]");
-        
-        // Add basic properties
         sb.AppendLine($"{indent}    maxLevel = {skill.MaxLevel}");
         sb.AppendLine($"{indent}    displayGroupName = {skill.DisplayGroupName.ToString().ToLower()}");
         sb.AppendLine($"{indent}    useTotalLevels = {skill.UseTotalLevels.ToString().ToLower()}");
@@ -22,7 +19,6 @@ public static class SkillHelper
         sb.AppendLine($"{indent}    iconSize = {skill.IconSize}");
         sb.AppendLine($"{indent}    noAfkPenalty = {skill.NoAfkPenalty.ToString().ToLower()}");
 
-        // Add group settings if present
         if (skill.IsGroupSkill())
         {
             sb.AppendLine();
