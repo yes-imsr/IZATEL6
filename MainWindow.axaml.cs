@@ -27,8 +27,7 @@ public partial class MainWindow : Window
                 BeginMoveDrag(e);
             };
         }
-
-        // Find and set up the Skills button
+        
         var skillsButton = this.FindControl<Button>("SkillsButton");
         if (skillsButton != null)
         {
@@ -37,7 +36,6 @@ public partial class MainWindow : Window
                 var pageContent = this.FindControl<ContentControl>("PageContent");
                 pageContent.Content = new SkillsPage();
                 
-                // Update active state
                 if (_activeButton != null)
                     _activeButton.Classes.Remove("active");
                 

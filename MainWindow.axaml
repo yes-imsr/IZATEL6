@@ -22,12 +22,11 @@
 
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="30"/> <!-- Title bar height -->
-                <RowDefinition Height="60"/> <!-- Navbar height -->
-                <RowDefinition Height="*"/>  <!-- Content area -->
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-
-            <!-- Title Bar -->
+            
             <Grid Grid.Row="0" Background="White" IsHitTestVisible="True">
                 <TextBlock Text="Izatel 6"
                            HorizontalAlignment="Center"
@@ -35,15 +34,12 @@
                            Margin="0,8,0,0"
                            FontWeight="Bold"
                            Foreground="Black"/>
-                <!-- This empty border enables window dragging -->
                 <Border Background="Transparent" 
                         Name="TitleBarBorder" />
             </Grid>
-
-            <!-- Navbar -->
+            
             <Border Grid.Row="1" Background="White">
                 <DockPanel LastChildFill="False">
-                    <!--title-->
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                         <Border Classes="logoPlaceholder">
                             <TextBlock Text="Logo" 
@@ -52,8 +48,7 @@
                         </Border>
                         <TextBlock Classes="appTitle" Text="PMMOEdit"/>
                     </StackPanel>
-
-                    <!--navbuttons-->
+                    
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                         <Button Classes="navTab" Name="AutoValuesButton" Content="AutoValues"/>
                         <Button Classes="navTab" Name="AntiCheeseButton" Content="AntiCheese"/>
@@ -70,8 +65,7 @@
                             Margin="0,0,15,0"/>
                 </DockPanel>
             </Border>
-
-            <!-- Content Area -->
+            
             <Grid Grid.Row="2" Background="White">
                 <ContentControl Name="PageContent"/>
             </Grid>
@@ -79,7 +73,6 @@
     </Panel>
 
     <Window.Styles>
-        <!-- Tab Button Style -->
         <Style Selector="Button.navTab">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="Black"/>
@@ -94,27 +87,23 @@
                 </Transitions>
             </Setter>
         </Style>
-
-        <!-- Active Tab Style -->
+        
         <Style Selector="Button.navTab.active">
             <Setter Property="Background" Value="Black"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
-
-        <!-- Hover Animation -->
+        
         <Style Selector="Button.navTab:pointerover">
             <Setter Property="Background" Value="#EEEEEE"/>
             <Setter Property="RenderTransform" Value="scale(1.05)"/>
         </Style>
-
-        <!-- Pressed Animation -->
+        
         <Style Selector="Button.navTab:pressed">
             <Setter Property="Background" Value="#DDDDDD"/>
             <Setter Property="RenderTransform" Value="scale(0.95)"/>
         </Style>
-
-        <!-- Logo Placeholder Style -->
+        
         <Style Selector="Border.logoPlaceholder">
             <Setter Property="Width" Value="40"/>
             <Setter Property="Height" Value="40"/>
@@ -122,8 +111,7 @@
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Margin" Value="10"/>
         </Style>
-
-        <!-- App Title Style -->
+        
         <Style Selector="TextBlock.appTitle">
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="20"/>

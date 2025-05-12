@@ -25,7 +25,7 @@ namespace PMMOEdit
             {
                 return (color.R << 16) | (color.G << 8) | color.B;
             }
-            return 16777215; // White
+            return 16777215; // white
         }
     }
 }

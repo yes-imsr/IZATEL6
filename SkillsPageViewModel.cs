@@ -25,16 +25,12 @@ namespace PMMOEdit
 
         public SkillsPageViewModel()
         {
-            // Clear any existing skills and load the default ones
             LoadDefaultSkills();
         }
 
         private void LoadDefaultSkills()
         {
-            // Clear any existing skills first
             Skills.Clear();
-            
-            // Default PMMO skills
             string defaultSkillsToml = @"
 [Skills.Entry.magic]
     maxLevel = 2147483647
@@ -281,17 +277,14 @@ namespace PMMOEdit
     iconSize = 16
     noAfkPenalty = false
 ";
-
-            // Parse skills from TOML
+            
             var defaultSkills = TomlSkillParser.ParseSkills(defaultSkillsToml);
             
-            // Add skills to the collection
+            //skill add
             foreach (var skill in defaultSkills)
             {
                 Skills.Add(skill);
             }
-            
-            // Select the first skill if available
             if (Skills.Count > 0)
                 SelectedSkill = Skills[0];
         }

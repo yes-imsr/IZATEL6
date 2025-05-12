@@ -15,22 +15,16 @@ namespace PMMOEdit
             bool isInGroupFor = false;
             Dictionary<string, decimal>? groupFor = null;
             
-            // Process each line in the TOML
+
             foreach (var line in tomlContent.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 string trimmedLine = line.Trim();
-                
-                // Skip empty lines and comments
                 if (string.IsNullOrWhiteSpace(trimmedLine) || trimmedLine.StartsWith("#"))
                     continue;
-                    
-                // Debug line parsing
-                System.Diagnostics.Debug.WriteLine($"Parsing TOML line: {trimmedLine}");
                 
-                // Check for skill section header [Skills.Entry.skillname]
+                System.Diagnostics.Debug.WriteLine($"Parsing TOML line: {trimmedLine}");
                 if (trimmedLine.StartsWith("[Skills.Entry.") && trimmedLine.EndsWith("]"))
                 {
-                    // If we were in a skill definition, add the completed skill to the list
                     if (isInSkill && !string.IsNullOrEmpty(currentSkill.Name))
                     {
                         if (groupFor != null && groupFor.Count > 0)
@@ -40,13 +34,10 @@ namespace PMMOEdit
                         skills.Add(currentSkill);
                     }
                     
-                    // Start a new skill
                     currentSkill = new Skill();
                     isInSkill = true;
                     isInGroupFor = false;
                     groupFor = null;
-                    
-                    // Extract the skill name
                     var match = Regex.Match(trimmedLine, @"\[Skills\.Entry\.([^\]\.]+)\]");
                     if (match.Success)
                     {
@@ -55,7 +46,6 @@ namespace PMMOEdit
                     continue;
                 }
                 
-                // Check for groupFor section
                 if (isInSkill && trimmedLine.Contains(".groupFor]"))
                 {
                     isInGroupFor = true;
@@ -63,7 +53,6 @@ namespace PMMOEdit
                     continue;
                 }
                 
-                // Process property assignments
                 if (isInSkill && !string.IsNullOrEmpty(trimmedLine) && trimmedLine.Contains("="))
                 {
                     string[] parts = trimmedLine.Split('=', 2);
@@ -72,7 +61,6 @@ namespace PMMOEdit
                         string propertyName = parts[0].Trim();
                         string propertyValue = parts[1].Trim();
                         
-                        // Handle group skill relationships
                         if (isInGroupFor)
                         {
                             if (decimal.TryParse(propertyValue, out decimal value))
@@ -82,7 +70,6 @@ namespace PMMOEdit
                             continue;
                         }
                         
-                        // Handle standard properties
                         switch (propertyName)
                         {
                             case "maxLevel":
@@ -108,7 +95,6 @@ namespace PMMOEdit
                                 break;
                                 
                             case "icon":
-                                // Remove quotes from the string if present
                                 currentSkill.Icon = propertyValue.Trim('"');
                                 break;
                                 
@@ -125,7 +111,6 @@ namespace PMMOEdit
                 }
             }
             
-            // Add the last skill if we were processing one
             if (isInSkill && !string.IsNullOrEmpty(currentSkill.Name))
             {
                 if (groupFor != null && groupFor.Count > 0)

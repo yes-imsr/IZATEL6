@@ -77,7 +77,7 @@ namespace PMMOEdit
                 {
                     _color = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(ColorHex)); // Update hex value when color changes
+                    OnPropertyChanged(nameof(ColorHex));
                 }
             }
         }

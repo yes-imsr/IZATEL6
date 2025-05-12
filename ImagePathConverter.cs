@@ -17,16 +17,12 @@ namespace PMMOEdit
 
             try
             {
-                // Handle both file system paths and resource paths
                 if (path.StartsWith("pmmo:") || path.StartsWith("minecraft:"))
                 {
-                    // For Minecraft resource paths, return a placeholder or null
-                    // In a real app, you might have a mapping of resource paths to embedded resources
                     return null;
                 }
                 else if (File.Exists(path))
                 {
-                    // For file system paths, load the image
                     return new Bitmap(path);
                 }
                 
@@ -34,14 +30,12 @@ namespace PMMOEdit
             }
             catch
             {
-                // Return null if image loading fails
                 return null;
             }
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            // This converter doesn't support conversion back
             return null;
         }
     }

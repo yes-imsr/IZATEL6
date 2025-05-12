@@ -54,7 +54,6 @@ public class MessageBox
         await tcs.Task;
     }
     
-    // Overload that doesn't require a parent window or button type
     public static Task Show(string message, string title)
     {
         var mainWindow = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop

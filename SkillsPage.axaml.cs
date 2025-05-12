@@ -16,10 +16,6 @@ public partial class SkillsPage : UserControl
     
         InitializeComponent();
 
-        // Add some test data
-        ViewModel.Skills.Add(new Skill { Name = "Test Skill", Color = 16711680 }); // Red
-        ViewModel.Skills.Add(new Skill { Name = "Another Skill", Color = 65280 }); // Green
-
         var skillsList = this.FindControl<ListBox>("SkillsList");
         if (skillsList != null)
         {
@@ -134,29 +130,21 @@ public partial class SkillsPage : UserControl
     
     private void AddSkill_Click(object? sender, EventArgs e)
     {
-        // Create a new skill with default values
         var newSkill = new Skill
         {
             Name = "New Skill",
             MaxLevel = 100,
-            Color = 3355443, // Dark gray
+            Color = 3355443,
             ShowInList = true,
             IconSize = 32
         };
         
-        // Add it to the collection
         ViewModel.Skills.Add(newSkill);
-        
-        // Select the new skill to edit it
         ViewModel.SelectedSkill = newSkill;
     }
     
     private void SaveSkill_Click(object? sender, EventArgs e)
     {
-        // Currently, the skill is already saved in the collection via two-way binding
-        // In a real application, you would save to a file or database here
-        
-        // Just for feedback that the save worked:
         var skillName = ViewModel.SelectedSkill?.Name ?? "skill";
         _ = MessageBox.Show($"Saved {skillName} successfully!", "Save Complete");
     }
@@ -183,7 +171,6 @@ public partial class SkillsPage : UserControl
             ViewModel.SelectedSkill = null;
         }
         
-        // Notify the user that deletion happened
         _ = MessageBox.Show($"Deleted skill '{skillName}'", "Deletion Complete");
     }
     
@@ -191,11 +178,7 @@ public partial class SkillsPage : UserControl
     {
         if (sender is ListBox listBox && listBox.SelectedItem is Skill selectedSkill)
         {
-            // Update the selected skill in the view model
             ViewModel.SelectedSkill = selectedSkill;
-            
-            // The color hex input will be automatically updated through binding
-            // to the Skill.ColorHex property
         }
     }
     
@@ -203,15 +186,13 @@ public partial class SkillsPage : UserControl
     {
         if (ViewModel.SelectedSkill == null)
             return;
-            
-        // Create OpenFileDialog
+        
         var dialog = new OpenFileDialog
         {
             Title = "Select Skill Icon",
             AllowMultiple = false
         };
         
-        // Set up file filters for common image formats
         dialog.Filters.Add(new FileDialogFilter
         {
             Name = "Image Files",
@@ -226,15 +207,12 @@ public partial class SkillsPage : UserControl
         
         try
         {
-            // Show the dialog and get the selected file
             var result = await dialog.ShowAsync(this.VisualRoot as Window);
             
             if (result != null && result.Length > 0)
             {
-                // Update the skill's icon property with the selected file path
                 ViewModel.SelectedSkill.Icon = result[0];
                 
-                // Optionally, you can update the UI explicitly if needed
                 var iconTextBox = this.FindControl<TextBox>("Icon");
                 if (iconTextBox != null)
                 {
@@ -254,23 +232,17 @@ public partial class SkillsPage : UserControl
             return;
             
         string hexColor = textBox.Text?.Trim() ?? "";
-        
-        // Add # prefix if not present
         if (!hexColor.StartsWith("#") && hexColor.Length > 0)
         {
             hexColor = "#" + hexColor;
             textBox.Text = hexColor;
-            return; // This will trigger another TextChanged event
+            return;
         }
         
-        // Ensure the format is valid (must be #RRGGBB)
         if (hexColor.StartsWith("#") && hexColor.Length == 7 && 
             System.Text.RegularExpressions.Regex.IsMatch(hexColor.Substring(1), "^[0-9A-Fa-f]{6}$"))
         {
-            // Manually set the ColorHex property on the skill
             ViewModel.SelectedSkill.ColorHex = hexColor;
-            
-            // Parse the color value
             string hexValue = hexColor.Substring(1);
             int colorValue = int.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
             
@@ -280,14 +252,12 @@ public partial class SkillsPage : UserControl
             
             var newColor = new SolidColorBrush(Color.FromRgb(r, g, b));
             
-            // Force UI update for preview square
             var colorPreview = this.FindControl<Border>("ColorPreview");
             if (colorPreview != null)
             {
                 colorPreview.Background = newColor;
             }
-            
-            // Force UI update for the summary title
+             
             var summaryTitle = this.FindControl<TextBlock>("SummaryTitle");
             if (summaryTitle != null)
             {
