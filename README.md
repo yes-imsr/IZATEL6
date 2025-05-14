@@ -1,5 +1,5 @@
 
-## 🛠️ What is Izatel?
+##  What is Izatel?
 
 **Izatel** is an internal dev tool created to streamline work on my long-term modpack project, **Project Izatel** — an MMORPG-style Minecraft pack I’ve been building since 2023.
 
@@ -7,7 +7,7 @@ This app exists because managing tons of mods (some essential) is chaos without 
 
 ---
 
-## 📦 First Module: PMMOEdit
+##  First Module: PMMOEdit
 
 The first tool in the Izatel suite is **PMMOEdit**, which focuses on editing config files for the [Project MMO](https://www.curseforge.com/minecraft/mc-mods/project-mmo) mod.
 
@@ -20,13 +20,13 @@ The first tool in the Izatel suite is **PMMOEdit**, which focuses on editing con
 
 ---
 
-## 🚧 What's Next?
+## What's Next?
 
 I plan to expand Izatel with more modules for handling different mods, data packs, and overall pack structure. If you're into modding or MMORPG-style packs, stay tuned.
 
 ---
 
-## 🤘 Built With
+## Built With
 
 - C#
 - .NET 8
