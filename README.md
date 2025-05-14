@@ -1,4 +1,14 @@
 
+ ▄█   ▄███████▄     ▄████████     ███        ▄████████  ▄█       
+███  ██▀     ▄██   ███    ███ ▀█████████▄   ███    ███ ███       
+███▌       ▄███▀   ███    ███    ▀███▀▀██   ███    █▀  ███       
+███▌  ▀█▀▄███▀▄▄   ███    ███     ███   ▀  ▄███▄▄▄     ███       
+███▌   ▄███▀   ▀ ▀███████████     ███     ▀▀███▀▀▀     ███       
+███  ▄███▀         ███    ███     ███       ███    █▄  ███       
+███  ███▄     ▄█   ███    ███     ███       ███    ███ ███▌    ▄ 
+█▀    ▀████████▀   ███    █▀     ▄████▀     ██████████ █████▄▄██ 
+                                                       ▀         
+
 ##  What is Izatel?
 
 **Izatel** is an internal dev tool created to streamline work on my long-term modpack project, **Project Izatel** — an MMORPG-style Minecraft pack I’ve been building since 2023.
