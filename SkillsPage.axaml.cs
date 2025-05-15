@@ -12,6 +12,7 @@ public partial class SkillsPage : UserControl
     public SkillsPage()
     {
         ViewModel = new SkillsPageViewModel();
+        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
         DataContext = ViewModel;
     
         InitializeComponent();
@@ -105,26 +106,19 @@ public partial class SkillsPage : UserControl
     
     private void NewFile_Click(object? sender, EventArgs e)
     {
-        // Clear any existing file path
         ViewModel.CurrentFilePath = null;
-        
-        // Load default skills
+        ViewModel.HasFileChanges = false;
+        ViewModel.HasNewFileChanges = false;
         ViewModel.LoadDefaultSkills();
-        
-        // Update skills list
         var skillsList = this.FindControl<ListBox>("SkillsList");
         if (skillsList != null)
         {
             skillsList.ItemsSource = null;
             skillsList.ItemsSource = ViewModel.Skills;
         }
-        
-        // Show the editor grid
         var skillEditorGrid = this.FindControl<Grid>("SkillEditorGrid");
         if (skillEditorGrid != null)
             skillEditorGrid.IsVisible = true;
-        
-        // Update header text
         var headerText = this.FindControl<TextBlock>("HeaderText");
         if (headerText != null)
             headerText.Text = "New Skills File";
@@ -152,30 +146,24 @@ public partial class SkillsPage : UserControl
             {
                 string filePath = result[0];
                 string fileName = System.IO.Path.GetFileName(filePath);
-                
-                // Validate that the file is named pmmo-Skills.toml
                 if (!fileName.Equals("pmmo-Skills.toml", StringComparison.OrdinalIgnoreCase))
                 {
                     await MessageBox.Show("Please select a valid pmmo-Skills.toml file.", "Invalid File");
                     return;
                 }
                 
-                // Load skills from the file
                 bool success = ViewModel.LoadSkillsFromFile(filePath);
                 
                 if (success)
                 {
-                    // Show the skill editor grid
+                    ViewModel.HasFileChanges = false;
+                    ViewModel.HasNewFileChanges = false;
                     var skillEditorGrid = this.FindControl<Grid>("SkillEditorGrid");
                     if (skillEditorGrid != null)
                         skillEditorGrid.IsVisible = true;
-                    
-                    // Update header text
                     var headerText = this.FindControl<TextBlock>("HeaderText");
                     if (headerText != null)
                         headerText.Text = $"Editing {fileName}";
-                        
-                    // Update the skill list with the loaded skills
                     var skillsList = this.FindControl<ListBox>("SkillsList");
                     if (skillsList != null)
                     {
@@ -197,12 +185,10 @@ public partial class SkillsPage : UserControl
     
     private async void NewExport_Click(object? sender, EventArgs e)
     {
-        // Show Grid if it's not visible
         var skillEditorGrid = this.FindControl<Grid>("SkillEditorGrid");
         if (skillEditorGrid != null && !skillEditorGrid.IsVisible)
             skillEditorGrid.IsVisible = true;
-        
-        // If there are no skills to export, show a message
+        ViewModel.HasNewFileChanges = false;
         if (ViewModel.Skills.Count == 0)
         {
             await MessageBox.Show("No skills to export. Please create or load skills first.", "Export Error");
@@ -234,7 +220,6 @@ public partial class SkillsPage : UserControl
             
             if (!string.IsNullOrEmpty(filePath))
             {
-                // Use the ViewModel's SaveToFile method to save with the correct format
                 bool success = ViewModel.SaveToFile(filePath);
                 
                 if (success)
@@ -266,19 +251,31 @@ public partial class SkillsPage : UserControl
         
         ViewModel.Skills.Add(newSkill);
         ViewModel.SelectedSkill = newSkill;
+        
+        // Mark that we have changes to track for save/export buttons
+        if (string.IsNullOrEmpty(ViewModel.CurrentFilePath))
+            ViewModel.HasNewFileChanges = true;
+        else
+            ViewModel.HasFileChanges = true;
     }
     
     private void SaveSkill_Click(object? sender, EventArgs e)
     {
         var skillName = ViewModel.SelectedSkill?.Name ?? "skill";
         _ = MessageBox.Show($"Saved {skillName} successfully!", "Save Complete");
+        
+        // Mark that we have changes to track for save/export buttons
+        if (string.IsNullOrEmpty(ViewModel.CurrentFilePath))
+            ViewModel.HasNewFileChanges = true;
+        else
+            ViewModel.HasFileChanges = true;
     }
     
     private async void SaveFile_Click(object? sender, EventArgs e)
     {
         if (string.IsNullOrEmpty(ViewModel.CurrentFilePath))
         {
-            await MessageBox.Show("No file is currently open. Please use 'Export' to save to a new file.", "Save Error");
+            await MessageBox.Show("No file is currently open. Please use 'Export new file' to save to a new file.", "Save Error");
             return;
         }
         
@@ -288,11 +285,14 @@ public partial class SkillsPage : UserControl
             
             if (success)
             {
+                // Reset file change tracking after successful save
+                ViewModel.HasFileChanges = false;
+                
                 await MessageBox.Show($"Skills successfully saved to {System.IO.Path.GetFileName(ViewModel.CurrentFilePath)}", "Save Complete");
             }
             else
             {
-                await MessageBox.Show("Failed to save skills to file. Please try using 'Export' instead.", "Save Error");
+                await MessageBox.Show("Failed to save skills to file. Please try using 'Export new file' instead.", "Save Error");
             }
         }
         catch (Exception ex)
@@ -320,6 +320,12 @@ public partial class SkillsPage : UserControl
             ViewModel.SelectedSkill = null;
         }
         
+        // Mark that we have changes to track for save/export buttons
+        if (string.IsNullOrEmpty(ViewModel.CurrentFilePath))
+            ViewModel.HasNewFileChanges = true;
+        else
+            ViewModel.HasFileChanges = true;
+            
         _ = MessageBox.Show($"Deleted skill '{skillName}'", "Deletion Complete");
     }
     
@@ -411,6 +417,23 @@ public partial class SkillsPage : UserControl
             if (summaryTitle != null)
             {
                 summaryTitle.Foreground = newColor;
+            }
+        }
+    }
+    
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ViewModel.SelectedSkill) || 
+            e.PropertyName == nameof(ViewModel.Skills))
+        {
+            // Track changes for new or existing file
+            if (string.IsNullOrEmpty(ViewModel.CurrentFilePath))
+            {
+                ViewModel.HasNewFileChanges = ViewModel.Skills.Count > 0;
+            }
+            else
+            {
+                ViewModel.HasFileChanges = true;
             }
         }
     }

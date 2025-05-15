@@ -8,43 +8,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="24b2b144-22d5-4868-a182-dda19317eba4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/AssemblyInfo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ContrastTextColorConverter.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CustomConfirmDialog.axaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CustomConfirmDialog.axaml.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/TextInputDialog.axaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/TextInputDialog.axaml.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/WelcomePage.axaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/WelcomePage.axaml.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Exports/pmmo-Skills.toml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MainWindow.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/MainWindow.axaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MainWindow.axaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MainWindow.axaml.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SkillsPage.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/SkillsPage.axaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SkillsPage.axaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/SkillsPage.axaml.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SkillsPageViewModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/SkillsPageViewModel.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TomlSkillParser.cs" beforeDir="false" afterPath="$PROJECT_DIR$/TomlSkillParser.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/Debug/net8.0/PMMOEdit.dll" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net8.0/PMMOEdit.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/Debug/net8.0/PMMOEdit.exe" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net8.0/PMMOEdit.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/Debug/net8.0/PMMOEdit.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net8.0/PMMOEdit.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/Avalonia/PMMOEdit.dll" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/Avalonia/PMMOEdit.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/Avalonia/PMMOEdit.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/Avalonia/PMMOEdit.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/Avalonia/Resources.Inputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/Avalonia/Resources.Inputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/Avalonia/references" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/Avalonia/references" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/Avalonia/resources" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/Avalonia/resources" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.GeneratedMSBuildEditorConfig.editorconfig" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.GeneratedMSBuildEditorConfig.editorconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.csproj.CoreCompileInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.csproj.CoreCompileInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.csproj.FileListAbsolute.txt" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.csproj.FileListAbsolute.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.dll" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.genruntimeconfig.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.genruntimeconfig.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.sourcelink.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/PMMOEdit.sourcelink.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/apphost.exe" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/apphost.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/ref/PMMOEdit.dll" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/ref/PMMOEdit.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/refint/Avalonia/PMMOEdit.dll" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/refint/Avalonia/PMMOEdit.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/refint/PMMOEdit.dll" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/refint/PMMOEdit.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.PMMOEdit.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PMMOEdit.dir/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,22 +50,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    ".NET Project.PMMOEdit.executor": "Run",
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "master",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;.NET Project.PMMOEdit.executor&quot;: &quot;Run&quot;,
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="PMMOEdit" type="DotNetProject" factoryName=".NET Project">
       <option name="EXE_PATH" value="" />
@@ -135,7 +99,7 @@
       <option name="presentableId" value="Default" />
       <updated>1747064791821</updated>
       <workItem from="1747064794233" duration="2126000" />
-      <workItem from="1747251625824" duration="9068000" />
+      <workItem from="1747251625824" duration="9496000" />
     </task>
     <task id="LOCAL-00001" summary="comment cleanup">
       <option name="closed" value="true" />
@@ -145,7 +109,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747065673169</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Skills:&#10;-files can be opened and changes amde to it can be saved.&#10;-Properly creates the pmmo-Skills.toml file.&#10;-text color will change depending on the buttons color to help visibility.">
+      <option name="closed" value="true" />
+      <created>1747319862039</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1747319862039</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -156,7 +128,8 @@
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="comment cleanup" />
-    <option name="LAST_COMMIT_MESSAGE" value="comment cleanup" />
+    <MESSAGE value="Skills:&#10;-files can be opened and changes amde to it can be saved.&#10;-Properly creates the pmmo-Skills.toml file.&#10;-text color will change depending on the buttons color to help visibility." />
+    <option name="LAST_COMMIT_MESSAGE" value="Skills:&#10;-files can be opened and changes amde to it can be saved.&#10;-Properly creates the pmmo-Skills.toml file.&#10;-text color will change depending on the buttons color to help visibility." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

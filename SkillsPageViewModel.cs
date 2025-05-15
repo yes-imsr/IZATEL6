@@ -28,6 +28,34 @@ namespace PMMOEdit
         
         public bool HasOpenedFile => !string.IsNullOrEmpty(CurrentFilePath);
         
+        private bool _hasFileChanges;
+        public bool HasFileChanges
+        {
+            get => _hasFileChanges;
+            set
+            {
+                if (_hasFileChanges != value)
+                {
+                    _hasFileChanges = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasFileChanges)));
+                }
+            }
+        }
+        
+        private bool _hasNewFileChanges;
+        public bool HasNewFileChanges
+        {
+            get => _hasNewFileChanges;
+            set
+            {
+                if (_hasNewFileChanges != value)
+                {
+                    _hasNewFileChanges = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasNewFileChanges)));
+                }
+            }
+        }
+        
         public Skill? SelectedSkill
         {
             get => _selectedSkill;

@@ -10,10 +10,10 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("Izatel")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("PMMOEdit")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+71f87ec98eb2822ca132af1c05ad640e9b22e27b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+986e3cc69508da26ba79013d22b91713f21a3f91")]
 [assembly: System.Reflection.AssemblyProductAttribute("PMMOEdit")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PMMOEdit")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

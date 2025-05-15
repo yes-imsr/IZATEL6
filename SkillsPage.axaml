@@ -20,30 +20,32 @@
     </UserControl.Resources>
     
     <Grid RowDefinitions="Auto,*">
-        <StackPanel Grid.Row="0" Margin="20" Orientation="Horizontal" Spacing="10">
+        <StackPanel Grid.Row="0" Margin="20" Orientation="Vertical" Spacing="15">
             <TextBlock Name="HeaderText"
                       Text="What would you like to do?"
                       FontSize="24"
                       FontWeight="Bold"
                       Foreground="Black"
-                      VerticalAlignment="Center"/>
+                      HorizontalAlignment="Center"/>
             
-            <Button Name="NewFileButton"
-                    Content="New File"
-                    Classes="actionButton"/>
-            
-            <Button Name="EditFileButton"
-                    Content="Edit File"
-                    Classes="actionButton"/>
-            
-            <Button Name="SaveFileButton"
-                    Content="Save File"
-                    Classes="actionButton"
-                    IsEnabled="{Binding HasOpenedFile}"/>
-            
-            <Button Name="NewExportButton"
-                    Content="New Export"
-                    Classes="actionButton"/>
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                <Button Name="NewFileButton"
+                        Content="Create a new file"
+                        Classes="actionButton"/>
+                
+                <Button Name="EditFileButton"
+                        Content="Edit an existing file"
+                        Classes="actionButton"/>
+                
+                <Button Name="SaveFileButton"
+                        Content="Save File"
+                        Classes="actionButton"
+                        IsEnabled="{Binding HasOpenedFile}"/>
+                
+                <Button Name="NewExportButton"
+                        Content="Export new file"
+                        Classes="actionButton"/>
+            </StackPanel>
         </StackPanel>
         
         <Grid Grid.Row="1"
