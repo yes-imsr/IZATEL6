@@ -18,6 +18,11 @@ public partial class MainWindow : Window
             TransparencyLevelHint = [WindowTransparencyLevel.AcrylicBlur];
             Background = null;
         }
+        var pageContent = this.FindControl<ContentControl>("PageContent");
+        if (pageContent != null)
+        {
+            pageContent.Content = new WelcomePage();
+        }
         
         var titleBarBorder = this.FindControl<Border>("TitleBarBorder");
         if (titleBarBorder != null)
@@ -25,6 +30,22 @@ public partial class MainWindow : Window
             titleBarBorder.PointerPressed += (_, e) =>
             {
                 BeginMoveDrag(e);
+            };
+        }
+        
+        var homeButton = this.FindControl<Button>("HomeButton");
+        if (homeButton != null)
+        {
+            homeButton.Click += (_, _) =>
+            {
+                var pageContent = this.FindControl<ContentControl>("PageContent");
+                pageContent.Content = new WelcomePage();
+                
+                if (_activeButton != null)
+                {
+                    _activeButton.Classes.Remove("active");
+                    _activeButton = null;
+                }
             };
         }
         

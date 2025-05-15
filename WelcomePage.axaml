@@ -1,0 +1,98 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="PMMOEdit.WelcomePage">
+    <ScrollViewer>
+        <StackPanel Margin="30">
+            <TextBlock Text="PMMO+"
+                       FontSize="36"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       Margin="0,20,0,10"/>
+                       
+            <TextBlock Text="Select a tab above to get started."
+                       FontSize="18"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,40"/>
+                       
+            <Border Background="#f8f8f8"
+                    BorderBrush="#e0e0e0"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20"
+                    Margin="20,0">
+                <StackPanel>
+                    <TextBlock Text="What is Izatel?"
+                               FontSize="24"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,15"/>
+                               
+                    <TextBlock Text="Izatel is an internal dev tool created to streamline work on my long-term modpack project, Project Izatel — an MMORPG-style Minecraft pack I've been building since 2023."
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,15"/>
+                               
+                    <TextBlock Text="This app exists because managing tons of mods (some essential) is chaos without good tools. Izatel will eventually be a suite of tools built to make modpack development easier, more visual, and way less annoying."
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,30"/>
+                               
+                    <TextBlock Text="First Module: PMMOEdit"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,15"/>
+                               
+                    <TextBlock Text="The first tool in the Izatel suite is PMMOEdit, which focuses on editing config files for the Project MMO mod."
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,30"/>
+                               
+                    <TextBlock Text="Current Features"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,15"/>
+                               
+                    <StackPanel Margin="15,0,0,30">
+                        <TextBlock Text="• Skill Page – Visual interface for managing skills."
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,5"/>
+                                   
+                        <TextBlock Text="• New File Initialization – Pressing 'New File' auto-fills default skills into the editor."
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,5"/>
+                                   
+                        <TextBlock Text="• Full Skill Control – Add, edit, or delete skills with ease."
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,5"/>
+                                   
+                        <TextBlock Text="• TOML Export – Instantly generate clean, accurate TOML config files ready to drop into your modpack."
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                    
+                    <TextBlock Text="What's Next?"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,15"/>
+                               
+                    <TextBlock Text="I plan to expand Izatel with more modules for handling different mods, data packs, and overall pack structure. If you're into modding or MMORPG-style packs, stay tuned."
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,30"/>
+                               
+                    <TextBlock Text="Built With"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,15"/>
+                               
+                    <StackPanel Margin="15,0,0,0">
+                        <TextBlock Text="• C#"
+                                   Margin="0,0,0,5"/>
+                                   
+                        <TextBlock Text="• .NET 8"
+                                   Margin="0,0,0,5"/>
+                                   
+                        <TextBlock Text="• Avalonia UI"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

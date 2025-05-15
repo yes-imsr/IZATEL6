@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -7,8 +8,25 @@ namespace PMMOEdit
     public class SkillsPageViewModel : INotifyPropertyChanged
     {
         private Skill? _selectedSkill;
+        private string? _currentFilePath;
         
         public ObservableCollection<Skill> Skills { get; } = new();
+        
+        public string? CurrentFilePath
+        {
+            get => _currentFilePath;
+            set
+            {
+                if (_currentFilePath != value)
+                {
+                    _currentFilePath = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(HasOpenedFile));
+                }
+            }
+        }
+        
+        public bool HasOpenedFile => !string.IsNullOrEmpty(CurrentFilePath);
         
         public Skill? SelectedSkill
         {
@@ -28,7 +46,7 @@ namespace PMMOEdit
             LoadDefaultSkills();
         }
 
-        private void LoadDefaultSkills()
+        public void LoadDefaultSkills()
         {
             Skills.Clear();
             string defaultSkillsToml = @"
@@ -279,8 +297,6 @@ namespace PMMOEdit
 ";
             
             var defaultSkills = TomlSkillParser.ParseSkills(defaultSkillsToml);
-            
-            //skill add
             foreach (var skill in defaultSkills)
             {
                 Skills.Add(skill);
@@ -289,6 +305,79 @@ namespace PMMOEdit
                 SelectedSkill = Skills[0];
         }
 
+        public bool LoadSkillsFromFile(string filePath)
+        {
+            try
+            {
+                string fileContent = System.IO.File.ReadAllText(filePath);
+                var skills = TomlSkillParser.ParseSkills(fileContent);
+                
+                if (skills.Count == 0)
+                {
+                    return false;
+                }
+                Skills.Clear();
+                foreach (var skill in skills)
+                {
+                    Skills.Add(skill);
+                }
+                if (Skills.Count > 0)
+                    SelectedSkill = Skills[0];
+                CurrentFilePath = filePath;
+                
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        
+        public bool SaveToFile(string? filePath = null)
+        {
+            filePath = filePath ?? CurrentFilePath;
+            if (string.IsNullOrEmpty(filePath))
+                return false;
+                
+            try
+            {
+                var sb = new System.Text.StringBuilder();
+
+                sb.AppendLine();
+                
+                sb.AppendLine("#========================================================================");
+                sb.AppendLine("#");
+                sb.AppendLine("# All skills in pmmo are defined when they are used anywhere in PMMO.");
+                sb.AppendLine("# You do not need to define a skill here to use it. However, defining");
+                sb.AppendLine("# a skills attributes here will give you amore rounded skill list and");
+                sb.AppendLine("# a cleaner looking mod. Note that all the defaults here can be replaced");
+                sb.AppendLine("# if you wish. Also note that when using custom icon sizes they must be");
+                sb.AppendLine("# a square image(eg. 16x16, 24x24, 32x32) and they default to 18x18.");
+                sb.AppendLine("#");
+                sb.AppendLine("#========================================================================");
+                sb.AppendLine("[Skills]");
+                sb.AppendLine();
+                sb.AppendLine("\t[Skills.Entry]");
+                sb.AppendLine();
+                
+                foreach (var skill in Skills)
+                {
+                    sb.AppendLine(SkillHelper.FormatSkillToToml(skill, 2));
+                    sb.AppendLine();
+                }
+                
+                System.IO.File.WriteAllText(filePath, sb.ToString());
+                if (filePath != CurrentFilePath)
+                    CurrentFilePath = filePath;
+                    
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

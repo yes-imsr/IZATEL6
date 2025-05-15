@@ -10,117 +10,96 @@ namespace PMMOEdit
         public static List<Skill> ParseSkills(string tomlContent)
         {
             var skills = new List<Skill>();
-            var currentSkill = new Skill();
-            bool isInSkill = false;
-            bool isInGroupFor = false;
-            Dictionary<string, decimal>? groupFor = null;
+            var lines = tomlContent.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             
-
-            foreach (var line in tomlContent.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+            Skill? currentSkill = null;
+            bool inGroupForSection = false;
+            
+            foreach (var line in lines)
             {
                 string trimmedLine = line.Trim();
-                if (string.IsNullOrWhiteSpace(trimmedLine) || trimmedLine.StartsWith("#"))
+                
+                if (string.IsNullOrWhiteSpace(trimmedLine) || trimmedLine.StartsWith('#'))
                     continue;
                 
-                System.Diagnostics.Debug.WriteLine($"Parsing TOML line: {trimmedLine}");
-                if (trimmedLine.StartsWith("[Skills.Entry.") && trimmedLine.EndsWith("]"))
+                var skillMatch = Regex.Match(trimmedLine, @"\[Skills\.Entry\.([^\]]+)\]");
+                if (skillMatch.Success)
                 {
-                    if (isInSkill && !string.IsNullOrEmpty(currentSkill.Name))
-                    {
-                        if (groupFor != null && groupFor.Count > 0)
-                        {
-                            currentSkill.GroupFor = groupFor;
-                        }
-                        skills.Add(currentSkill);
-                    }
+                    inGroupForSection = false;
                     
-                    currentSkill = new Skill();
-                    isInSkill = true;
-                    isInGroupFor = false;
-                    groupFor = null;
-                    var match = Regex.Match(trimmedLine, @"\[Skills\.Entry\.([^\]\.]+)\]");
-                    if (match.Success)
+                    if (currentSkill != null)
+                        skills.Add(currentSkill);
+                    
+                    string skillName = skillMatch.Groups[1].Value;
+                    currentSkill = new Skill { Name = skillName };
+                    continue;
+                }
+                
+                if (trimmedLine.Contains(".groupFor]"))
+                {
+                    inGroupForSection = true;
+                    if (currentSkill != null && currentSkill.GroupFor == null)
+                        currentSkill.GroupFor = new Dictionary<string, decimal>();
+                    continue;
+                                    }
+                
+                                    if (currentSkill == null)
+                    continue;
+                                    
+                                    if (inGroupForSection)
+                                    {
+                    var groupForMatch = Regex.Match(trimmedLine, @"([^ =]+)\s*=\s*([0-9.]+)");
+                    if (groupForMatch.Success && currentSkill.GroupFor != null)
                     {
-                        currentSkill.Name = match.Groups[1].Value;
+                        string subSkillName = groupForMatch.Groups[1].Value.Trim();
+                        decimal value = decimal.Parse(groupForMatch.Groups[2].Value);
+                        currentSkill.GroupFor[subSkillName] = value;
                     }
                     continue;
                 }
-                
-                if (isInSkill && trimmedLine.Contains(".groupFor]"))
+                                    
+                var propMatch = Regex.Match(trimmedLine, @"([^ =]+)\s*=\s*(.+)");
+                if (propMatch.Success)
                 {
-                    isInGroupFor = true;
-                    groupFor = new Dictionary<string, decimal>();
-                    continue;
-                }
-                
-                if (isInSkill && !string.IsNullOrEmpty(trimmedLine) && trimmedLine.Contains("="))
-                {
-                    string[] parts = trimmedLine.Split('=', 2);
-                    if (parts.Length == 2)
+                    string propName = propMatch.Groups[1].Value.Trim();
+                    string propValue = propMatch.Groups[2].Value.Trim();
+                    
+                    switch (propName)
                     {
-                        string propertyName = parts[0].Trim();
-                        string propertyValue = parts[1].Trim();
-                        
-                        if (isInGroupFor)
-                        {
-                            if (decimal.TryParse(propertyValue, out decimal value))
-                            {
-                                groupFor![propertyName] = value;
-                            }
-                            continue;
-                        }
-                        
-                        switch (propertyName)
-                        {
-                            case "maxLevel":
-                                if (long.TryParse(propertyValue, out long maxLevel))
-                                    currentSkill.MaxLevel = maxLevel;
-                                break;
-                                
-                            case "displayGroupName":
-                                currentSkill.DisplayGroupName = propertyValue.ToLower() == "true";
-                                break;
-                                
-                            case "useTotalLevels":
-                                currentSkill.UseTotalLevels = propertyValue.ToLower() == "true";
-                                break;
-                                
-                            case "color":
-                                if (int.TryParse(propertyValue, out int color))
-                                    currentSkill.Color = color;
-                                break;
-                                
-                            case "showInList":
-                                currentSkill.ShowInList = propertyValue.ToLower() == "true";
-                                break;
-                                
-                            case "icon":
-                                currentSkill.Icon = propertyValue.Trim('"');
-                                break;
-                                
-                            case "iconSize":
-                                if (int.TryParse(propertyValue, out int iconSize))
-                                    currentSkill.IconSize = iconSize;
-                                break;
-                                
-                            case "noAfkPenalty":
-                                currentSkill.NoAfkPenalty = propertyValue.ToLower() == "true";
-                                break;
-                        }
+                        case "maxLevel":
+                            currentSkill.MaxLevel = int.Parse(propValue);
+                            break;
+                        case "displayGroupName":
+                            currentSkill.DisplayGroupName = bool.Parse(propValue);
+                            break;
+                        case "useTotalLevels":
+                            currentSkill.UseTotalLevels = bool.Parse(propValue);
+                            break;
+                        case "color":
+                            currentSkill.Color = int.Parse(propValue);
+                            currentSkill.ColorHex = $"#{currentSkill.Color:X6}";
+                            break;
+                        case "showInList":
+                            currentSkill.ShowInList = bool.Parse(propValue);
+                            break;
+                        case "icon":
+                            currentSkill.Icon = propValue.Trim('"');
+                            break;
+                        case "iconSize":
+                            currentSkill.IconSize = int.Parse(propValue);
+                            break;
+                        case "noAfkPenalty":
+                            currentSkill.NoAfkPenalty = bool.Parse(propValue);
+                            break;
                     }
                 }
             }
             
-            if (isInSkill && !string.IsNullOrEmpty(currentSkill.Name))
-            {
-                if (groupFor != null && groupFor.Count > 0)
-                {
-                    currentSkill.GroupFor = groupFor;
-                }
+            if (currentSkill != null)
                 skills.Add(currentSkill);
-            }
             
             return skills;
         }
     }
 }
+

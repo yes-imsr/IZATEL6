@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="PMMOEdit.MainWindow"
-        Title="Izatel PMMOEdit"
+        Title="Izatel"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="30"
         Background="White">
@@ -28,7 +28,7 @@
             </Grid.RowDefinitions>
             
             <Grid Grid.Row="0" Background="White" IsHitTestVisible="True">
-                <TextBlock Text="Izatel 6"
+                <TextBlock Text="Izatel"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            Margin="0,8,0,0"
@@ -46,7 +46,7 @@
                                      HorizontalAlignment="Center" 
                                      VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Classes="appTitle" Text="PMMOEdit"/>
+                        <Button Classes="homeButton" Name="HomeButton" Content="PMMO+"/>
                     </StackPanel>
                     
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
@@ -73,6 +73,34 @@
     </Panel>
 
     <Window.Styles>
+        <Style Selector="Button.homeButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="10,0,20,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Foreground" Duration="0:0:0.2"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        
+        <Style Selector="Button.homeButton:pointerover">
+            <Setter Property="Foreground" Value="#444444"/>
+            <Setter Property="RenderTransform" Value="scale(1.05)"/>
+        </Style>
+        
+        <Style Selector="Button.homeButton:pressed">
+            <Setter Property="Foreground" Value="#888888"/>
+            <Setter Property="RenderTransform" Value="scale(0.95)"/>
+        </Style>
+        
         <Style Selector="Button.navTab">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="Black"/>

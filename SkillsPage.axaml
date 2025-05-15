@@ -10,15 +10,13 @@
     d:DesignHeight="450" 
     xmlns:vm="clr-namespace:PMMOEdit"
     x:DataType="pmmoEdit:SkillsPageViewModel">
-    <UserControl.DataContext>
-        <vm:SkillsPageViewModel/>
-    </UserControl.DataContext>
 
     <UserControl.Resources>
         <pmmoEdit:IntToColorConverter x:Key="IntToColorConverter"/>
         <pmmoEdit:ImagePathConverter x:Key="ImagePathConverter"/>
         <pmmoEdit:StringStartsWithConverter x:Key="StringStartsWithConverter"/>
         <pmmoEdit:StringDoesNotStartWithConverter x:Key="StringDoesNotStartWithConverter"/>
+        <pmmoEdit:ContrastTextColorConverter x:Key="ContrastTextColorConverter"/>
     </UserControl.Resources>
     
     <Grid RowDefinitions="Auto,*">
@@ -37,6 +35,11 @@
             <Button Name="EditFileButton"
                     Content="Edit File"
                     Classes="actionButton"/>
+            
+            <Button Name="SaveFileButton"
+                    Content="Save File"
+                    Classes="actionButton"
+                    IsEnabled="{Binding HasOpenedFile}"/>
             
             <Button Name="NewExportButton"
                     Content="New Export"
@@ -73,7 +76,7 @@
                                     <TextBlock Text="{Binding Name}" 
                                               HorizontalAlignment="Center" 
                                               FontWeight="SemiBold"
-                                              Foreground="White"/>
+                                              Foreground="{Binding Color, Converter={StaticResource ContrastTextColorConverter}}"/>
                                 </Border>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -178,7 +181,7 @@
                                     <TextBlock Text="{Binding Name}" 
                                                FontSize="20" 
                                                FontWeight="Bold"
-                                               Foreground="White"
+                                               Foreground="{Binding Color, Converter={StaticResource ContrastTextColorConverter}}"
                                                HorizontalAlignment="Center"/>
                                     <Image Width="80" 
                                            Height="80" 

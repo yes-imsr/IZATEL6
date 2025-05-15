@@ -43,6 +43,10 @@ public partial class SkillsPage : UserControl
         if (editFileButton != null)
             editFileButton.Click += EditFile_Click;
 
+        var saveFileButton = this.FindControl<Button>("SaveFileButton");
+        if (saveFileButton != null)
+            saveFileButton.Click += SaveFile_Click;
+            
         var newExportButton = this.FindControl<Button>("NewExportButton");
         if (newExportButton != null)
             newExportButton.Click += NewExport_Click;
@@ -101,31 +105,152 @@ public partial class SkillsPage : UserControl
     
     private void NewFile_Click(object? sender, EventArgs e)
     {
-        // TODO: Implement new file creation logic
+        // Clear any existing file path
+        ViewModel.CurrentFilePath = null;
+        
+        // Load default skills
+        ViewModel.LoadDefaultSkills();
+        
+        // Update skills list
+        var skillsList = this.FindControl<ListBox>("SkillsList");
+        if (skillsList != null)
+        {
+            skillsList.ItemsSource = null;
+            skillsList.ItemsSource = ViewModel.Skills;
+        }
+        
+        // Show the editor grid
         var skillEditorGrid = this.FindControl<Grid>("SkillEditorGrid");
         if (skillEditorGrid != null)
             skillEditorGrid.IsVisible = true;
         
+        // Update header text
         var headerText = this.FindControl<TextBlock>("HeaderText");
         if (headerText != null)
-            headerText.Text = "Editing File";
+            headerText.Text = "New Skills File";
     }
     
-    private void EditFile_Click(object? sender, EventArgs e)
+    private async void EditFile_Click(object? sender, EventArgs e)
     {
-        // TODO: Implement file editing logic
+        try
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = "Open PMMO Skills File",
+                AllowMultiple = false
+            };
+            
+            dialog.Filters.Add(new FileDialogFilter
+            {
+                Name = "PMMO Skills Files",
+                Extensions = { "toml" }
+            });
+            
+            var result = await dialog.ShowAsync(this.VisualRoot as Window);
+            
+            if (result != null && result.Length > 0)
+            {
+                string filePath = result[0];
+                string fileName = System.IO.Path.GetFileName(filePath);
+                
+                // Validate that the file is named pmmo-Skills.toml
+                if (!fileName.Equals("pmmo-Skills.toml", StringComparison.OrdinalIgnoreCase))
+                {
+                    await MessageBox.Show("Please select a valid pmmo-Skills.toml file.", "Invalid File");
+                    return;
+                }
+                
+                // Load skills from the file
+                bool success = ViewModel.LoadSkillsFromFile(filePath);
+                
+                if (success)
+                {
+                    // Show the skill editor grid
+                    var skillEditorGrid = this.FindControl<Grid>("SkillEditorGrid");
+                    if (skillEditorGrid != null)
+                        skillEditorGrid.IsVisible = true;
+                    
+                    // Update header text
+                    var headerText = this.FindControl<TextBlock>("HeaderText");
+                    if (headerText != null)
+                        headerText.Text = $"Editing {fileName}";
+                        
+                    // Update the skill list with the loaded skills
+                    var skillsList = this.FindControl<ListBox>("SkillsList");
+                    if (skillsList != null)
+                    {
+                        skillsList.ItemsSource = null;
+                        skillsList.ItemsSource = ViewModel.Skills;
+                    }
+                }
+                else
+                {
+                    await MessageBox.Show("Failed to load skills from the selected file. The file might be corrupted or have an invalid format.", "Load Error");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await MessageBox.Show($"Error loading file: {ex.Message}", "Error");
+        }
+    }
+    
+    private async void NewExport_Click(object? sender, EventArgs e)
+    {
+        // Show Grid if it's not visible
         var skillEditorGrid = this.FindControl<Grid>("SkillEditorGrid");
-        if (skillEditorGrid != null)
+        if (skillEditorGrid != null && !skillEditorGrid.IsVisible)
             skillEditorGrid.IsVisible = true;
         
-        var headerText = this.FindControl<TextBlock>("HeaderText");
-        if (headerText != null)
-            headerText.Text = "Editing File";
-    }
-    
-    private void NewExport_Click(object? sender, EventArgs e)
-    {
-        // TODO: Implement export creation logic
+        // If there are no skills to export, show a message
+        if (ViewModel.Skills.Count == 0)
+        {
+            await MessageBox.Show("No skills to export. Please create or load skills first.", "Export Error");
+            return;
+        }
+        
+        var dialog = new SaveFileDialog
+        {
+            Title = "Export Skills to TOML",
+            InitialFileName = "pmmo-Skills.toml",
+            DefaultExtension = ".toml"
+        };
+        
+        dialog.Filters.Add(new FileDialogFilter
+        {
+            Name = "TOML Files",
+            Extensions = { "toml" }
+        });
+        
+        dialog.Filters.Add(new FileDialogFilter
+        {
+            Name = "All Files",
+            Extensions = { "*" }
+        });
+        
+        try
+        {
+            var filePath = await dialog.ShowAsync(this.VisualRoot as Window);
+            
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                // Use the ViewModel's SaveToFile method to save with the correct format
+                bool success = ViewModel.SaveToFile(filePath);
+                
+                if (success)
+                {
+                    await MessageBox.Show($"Skills successfully exported to {System.IO.Path.GetFileName(filePath)}", "Export Complete");
+                }
+                else
+                {
+                    await MessageBox.Show("Failed to export skills to file.", "Export Error");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await MessageBox.Show($"Error exporting skills: {ex.Message}", "Export Error");
+        }
     }
     
     private void AddSkill_Click(object? sender, EventArgs e)
@@ -149,19 +274,43 @@ public partial class SkillsPage : UserControl
         _ = MessageBox.Show($"Saved {skillName} successfully!", "Save Complete");
     }
     
+    private async void SaveFile_Click(object? sender, EventArgs e)
+    {
+        if (string.IsNullOrEmpty(ViewModel.CurrentFilePath))
+        {
+            await MessageBox.Show("No file is currently open. Please use 'Export' to save to a new file.", "Save Error");
+            return;
+        }
+        
+        try
+        {
+            bool success = ViewModel.SaveToFile();
+            
+            if (success)
+            {
+                await MessageBox.Show($"Skills successfully saved to {System.IO.Path.GetFileName(ViewModel.CurrentFilePath)}", "Save Complete");
+            }
+            else
+            {
+                await MessageBox.Show("Failed to save skills to file. Please try using 'Export' instead.", "Save Error");
+            }
+        }
+        catch (Exception ex)
+        {
+            await MessageBox.Show($"Error saving file: {ex.Message}", "Save Error");
+        }
+    }
+    
     private void DeleteSkill_Click(object? sender, EventArgs e)
     {
         if (ViewModel.SelectedSkill == null)
             return;
-            
-        // Get the skill info before removal
+        
         var skillName = ViewModel.SelectedSkill.Name;
         var skillToDelete = ViewModel.SelectedSkill;
         
-        // Remove the skill from the collection
         ViewModel.Skills.Remove(skillToDelete);
         
-        // Select another skill if available, otherwise clear selection
         if (ViewModel.Skills.Count > 0)
         {
             ViewModel.SelectedSkill = ViewModel.Skills[0];

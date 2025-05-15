@@ -24,8 +24,17 @@ build_property.EnableCodeStyleSeverity =
 [C:/Users/scott.rucker/RiderProjects/PMMOEdit/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[C:/Users/scott.rucker/RiderProjects/PMMOEdit/CustomConfirmDialog.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [C:/Users/scott.rucker/RiderProjects/PMMOEdit/MainWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
 [C:/Users/scott.rucker/RiderProjects/PMMOEdit/SkillsPage.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/scott.rucker/RiderProjects/PMMOEdit/TextInputDialog.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/scott.rucker/RiderProjects/PMMOEdit/WelcomePage.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
