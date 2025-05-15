@@ -35,4 +35,4 @@ I plan to expand Izatel with more modules for handling different mods, data pack
 
 ---
 
-> *Made by one dude whos looking for a job.*
+> *Made by one dude.*
