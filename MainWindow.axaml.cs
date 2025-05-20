@@ -39,7 +39,10 @@ public partial class MainWindow : Window
             homeButton.Click += (_, _) =>
             {
                 var pageContent = this.FindControl<ContentControl>("PageContent");
-                pageContent.Content = new WelcomePage();
+                if (pageContent != null)
+                {
+                    pageContent.Content = new WelcomePage();
+                }
                 
                 if (_activeButton != null)
                 {
@@ -55,7 +58,10 @@ public partial class MainWindow : Window
             skillsButton.Click += (sender, _) =>
             {
                 var pageContent = this.FindControl<ContentControl>("PageContent");
-                pageContent.Content = new SkillsPage();
+                if (pageContent != null)
+                {
+                    pageContent.Content = new SkillsPage();
+                }
                 
                 if (_activeButton != null)
                     _activeButton.Classes.Remove("active");
@@ -74,7 +80,10 @@ public partial class MainWindow : Window
             serverButton.Click += (sender, _) =>
             {
                 var pageContent = this.FindControl<ContentControl>("PageContent");
-                pageContent.Content = new ServerPage();
+                if (pageContent != null)
+                {
+                    pageContent.Content = new ServerPage();
+                }
                 
                 if (_activeButton != null)
                     _activeButton.Classes.Remove("active");

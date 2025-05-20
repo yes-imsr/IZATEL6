@@ -1,9 +1,11 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using PMMOEdit.Models;
 
 namespace PMMOEdit
 {
@@ -12,6 +14,7 @@ namespace PMMOEdit
         private ServerPageViewModel ViewModel { get; }
         private string _newSkillName = string.Empty;
         private string _newVeinBlacklistItem = string.Empty;
+        private string _newPartyBonusSkill = string.Empty;
 
         public ServerPage()
         {
@@ -56,7 +59,7 @@ namespace PMMOEdit
                 // Add TextChanged event handler
                 newPartyBonusSkillTextBox.TextChanged += (s, e) => 
                 {
-                    _newPartyBonusSkill = newPartyBonusSkillTextBox.Text;
+                    _newPartyBonusSkill = newPartyBonusSkillTextBox.Text ?? string.Empty;
                 };
             }
 
@@ -99,7 +102,7 @@ namespace PMMOEdit
                 // Add TextChanged event handler
                 newSkillNameTextBox.TextChanged += (s, e) => 
                 {
-                    _newSkillName = newSkillNameTextBox.Text;
+                    _newSkillName = newSkillNameTextBox.Text ?? string.Empty;
                 };
             }
             
@@ -114,7 +117,7 @@ namespace PMMOEdit
                 // Add TextChanged event handler
                 newVeinBlacklistItemTextBox.TextChanged += (s, e) => 
                 {
-                    _newVeinBlacklistItem = newVeinBlacklistItemTextBox.Text;
+                    _newVeinBlacklistItem = newVeinBlacklistItemTextBox.Text ?? string.Empty;
                 };
             }
             
@@ -212,7 +215,8 @@ namespace PMMOEdit
                     Extensions = { "toml" }
                 });
                 
-                var result = await dialog.ShowAsync(this.VisualRoot as Window);
+                var dialogParent = this.VisualRoot as Window;
+                var result = await dialog.ShowAsync(dialogParent);
                 
                 if (result != null && result.Length > 0)
                 {
@@ -252,7 +256,11 @@ namespace PMMOEdit
                             ConfirmButtonText = "OK",
                             ShowCancelButton = false
                         };
-                        await messageBox.ShowDialog(this.VisualRoot as Window);
+                        var dialogOwner = this.VisualRoot as Window;
+                        if (dialogOwner != null)
+                            await messageBox.ShowDialog(dialogOwner);
+                        else
+                            await messageBox.ShowDialog(null);
                     }
                                     }
                                 }
@@ -286,18 +294,41 @@ namespace PMMOEdit
             
             try
             {
+                // Ensure the directory exists before saving
+                string directory = System.IO.Path.GetDirectoryName(ViewModel.CurrentFilePath);
+                if (!string.IsNullOrEmpty(directory) && !System.IO.Directory.Exists(directory))
+                {
+                    System.IO.Directory.CreateDirectory(directory);
+                }
+                
                 bool success = ViewModel.SaveToFile();
                 
                 if (success)
                 {
-                    var messageBox = new CustomConfirmDialog
+                    // Verify file was saved completely by checking file size
+                    var fileInfo = new System.IO.FileInfo(ViewModel.CurrentFilePath);
+                    if (fileInfo.Length < 100) // If file is suspiciously small
                     {
-                        Title = "Save Complete",
-                        Message = $"Server config successfully saved to {System.IO.Path.GetFileName(ViewModel.CurrentFilePath)}",
-                        ConfirmButtonText = "OK",
-                        ShowCancelButton = false
-                    };
-                    await messageBox.ShowDialog(this.VisualRoot as Window);
+                        var messageBox = new CustomConfirmDialog
+                        {
+                            Title = "Save Warning",
+                            Message = $"File was saved but appears to be incomplete. The file size is only {fileInfo.Length} bytes. Try using 'Export new file' instead.",
+                            ConfirmButtonText = "OK",
+                            ShowCancelButton = false
+                        };
+                        await messageBox.ShowDialog(this.VisualRoot as Window);
+                    }
+                    else
+                    {
+                        var messageBox = new CustomConfirmDialog
+                        {
+                            Title = "Save Complete",
+                            Message = $"Server config successfully saved to {System.IO.Path.GetFileName(ViewModel.CurrentFilePath)}",
+                            ConfirmButtonText = "OK",
+                            ShowCancelButton = false
+                        };
+                        await messageBox.ShowDialog(this.VisualRoot as Window);
+                    }
                 }
                 else
                 {
@@ -313,14 +344,18 @@ namespace PMMOEdit
             }
             catch (Exception ex)
             {
+                // Provide more detailed error information
                 var messageBox = new CustomConfirmDialog
                 {
                     Title = "Save Error",
-                    Message = $"Error saving file: {ex.Message}",
+                    Message = $"Error saving file: {ex.Message}\n\nDetails: {ex.GetType().Name}\n{ex.StackTrace?.Split('\n')[0]}",
                     ConfirmButtonText = "OK",
                     ShowCancelButton = false
                 };
                 await messageBox.ShowDialog(this.VisualRoot as Window);
+                
+                // Log full details to debug console
+                System.Diagnostics.Debug.WriteLine($"Error saving file: {ex}");
             }
         }
         
@@ -659,20 +694,8 @@ namespace PMMOEdit
                             if (ViewModel == null || ViewModel.ServerConfig == null)
                                 return;
                                 
-                            ViewModel.ServerConfig.WearReqEnabled = true;
-                            ViewModel.ServerConfig.UseEnchantmentReqEnabled = true;
-                            ViewModel.ServerConfig.ToolReqEnabled = true;
-                            ViewModel.ServerConfig.WeaponReqEnabled = true;
-                            ViewModel.ServerConfig.UseReqEnabled = true;
-                            ViewModel.ServerConfig.PlaceReqEnabled = true;
-                            ViewModel.ServerConfig.BreakReqEnabled = true;
-                            ViewModel.ServerConfig.KillReqEnabled = true;
-                            ViewModel.ServerConfig.TravelReqEnabled = true;
-                            ViewModel.ServerConfig.RideReqEnabled = true;
-                            ViewModel.ServerConfig.TameReqEnabled = true;
-                            ViewModel.ServerConfig.BreedReqEnabled = true;
-                            ViewModel.ServerConfig.InteractReqEnabled = true;
-                            ViewModel.ServerConfig.EntityInteractReqEnabled = true;
+                            // Use a better approach to update all checkboxes
+                            UpdateAllRequirementSettings(true);
                             
                             ViewModel.HasFileChanges = true;
                             
@@ -680,31 +703,188 @@ namespace PMMOEdit
                             this.InvalidateVisual();
                         }
                         
+                        // Helper method to update all requirement settings
+                        private void UpdateAllRequirementSettings(bool enabled)
+                        {
+                            // Get all CheckBox controls in the requirements grid
+                            var requirementsGrid = this.FindControl<Grid>("RequirementsGrid");
+                            if (requirementsGrid != null)
+                            {
+                                // Find all checkboxes in the Requirements tab
+                                foreach (var checkBox in this.GetVisualDescendants().OfType<CheckBox>())
+                                {
+                                    // Only update the checkboxes that are bound to requirement properties
+                                    if (checkBox.DataContext == ViewModel && checkBox.IsVisible)
+                                    {
+                                        checkBox.IsChecked = enabled;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Fallback to direct property setting if we can't find the controls
+                                var updatedConfig = ViewModel.ServerConfig;
+                                
+                                updatedConfig.WearReqEnabled = enabled;
+                                updatedConfig.UseEnchantmentReqEnabled = enabled;
+                                updatedConfig.ToolReqEnabled = enabled;
+                                updatedConfig.WeaponReqEnabled = enabled;
+                                updatedConfig.UseReqEnabled = enabled;
+                                updatedConfig.PlaceReqEnabled = enabled;
+                                updatedConfig.BreakReqEnabled = enabled;
+                                updatedConfig.KillReqEnabled = enabled;
+                                updatedConfig.TravelReqEnabled = enabled;
+                                updatedConfig.RideReqEnabled = enabled;
+                                updatedConfig.TameReqEnabled = enabled;
+                                updatedConfig.BreedReqEnabled = enabled;
+                                updatedConfig.InteractReqEnabled = enabled;
+                                updatedConfig.EntityInteractReqEnabled = enabled;
+                                
+                                // Create a new instance to ensure property change notification
+                                ViewModel.ServerConfig = new Models.ServerConfig
+                                {
+                                    // Copy all existing properties
+                                    CreativeReach = updatedConfig.CreativeReach,
+                                    SalvageBlock = updatedConfig.SalvageBlock,
+                                    TreasureEnabled = updatedConfig.TreasureEnabled,
+                                    BrewingTracked = updatedConfig.BrewingTracked,
+                                    MaxLevel = updatedConfig.MaxLevel,
+                                    UseExponentialFormula = updatedConfig.UseExponentialFormula,
+                                    LossOnDeath = updatedConfig.LossOnDeath,
+                                    LoseLevelsOnDeath = updatedConfig.LoseLevelsOnDeath,
+                                    LoseOnlyExcess = updatedConfig.LoseOnlyExcess,
+                                    GlobalModifier = updatedConfig.GlobalModifier,
+                                    LinearBaseXP = updatedConfig.LinearBaseXP,
+                                    LinearPerLevel = updatedConfig.LinearPerLevel,
+                                    ExpBaseXP = updatedConfig.ExpBaseXP,
+                                    ExpPowerBase = updatedConfig.ExpPowerBase,
+                                    ExpPerLevel = updatedConfig.ExpPerLevel,
+                                    SkillModifiers = updatedConfig.SkillModifiers,
+                                    PartyRange = updatedConfig.PartyRange,
+                                    PartyBonus = updatedConfig.PartyBonus,
+                                    EnableMobScaling = updatedConfig.EnableMobScaling,
+                                    ScalingAOE = updatedConfig.ScalingAOE,
+                                    BaseLevel = updatedConfig.BaseLevel,
+                                    BossScaling = updatedConfig.BossScaling,
+                                    MobScalingUseExponentialFormula = updatedConfig.MobScalingUseExponentialFormula,
+                                    MobScalingLinearPerLevel = updatedConfig.MobScalingLinearPerLevel,
+                                    MobScalingExpPowerBase = updatedConfig.MobScalingExpPowerBase,
+                                    MobScalingExpPerLevel = updatedConfig.MobScalingExpPerLevel,
+                                    veinEnabled = updatedConfig.veinEnabled,
+                                    RequireSettings = updatedConfig.RequireSettings,
+                                    VeinMineDefaultConsume = updatedConfig.VeinMineDefaultConsume,
+                                    VeinChargeModifier = updatedConfig.VeinChargeModifier,
+                                    BaseChargeRate = updatedConfig.BaseChargeRate,
+                                    BaseVeinCapacity = updatedConfig.BaseVeinCapacity,
+                                    VeinBlacklist = updatedConfig.VeinBlacklist,
+                                    ReusePenalty = updatedConfig.ReusePenalty,
+                                    PerksPlusConfigs = updatedConfig.PerksPlusConfigs,
+                                    
+                                    // Update all requirement settings
+                                    WearReqEnabled = enabled,
+                                    UseEnchantmentReqEnabled = enabled,
+                                    ToolReqEnabled = enabled,
+                                    WeaponReqEnabled = enabled,
+                                    UseReqEnabled = enabled,
+                                    PlaceReqEnabled = enabled,
+                                    BreakReqEnabled = enabled,
+                                    KillReqEnabled = enabled,
+                                    TravelReqEnabled = enabled,
+                                    RideReqEnabled = enabled,
+                                    TameReqEnabled = enabled,
+                                    BreedReqEnabled = enabled,
+                                    InteractReqEnabled = enabled,
+                                    EntityInteractReqEnabled = enabled
+                                };
+                            }
+                        }
+                        
                         // Disable all requirements
                         private void DisableAllRequirements_Click(object? sender, EventArgs e)
                         {
                             if (ViewModel == null || ViewModel.ServerConfig == null)
                                 return;
-                                
-                            ViewModel.ServerConfig.WearReqEnabled = false;
-                            ViewModel.ServerConfig.UseEnchantmentReqEnabled = false;
-                            ViewModel.ServerConfig.ToolReqEnabled = false;
-                            ViewModel.ServerConfig.WeaponReqEnabled = false;
-                            ViewModel.ServerConfig.UseReqEnabled = false;
-                            ViewModel.ServerConfig.PlaceReqEnabled = false;
-                            ViewModel.ServerConfig.BreakReqEnabled = false;
-                            ViewModel.ServerConfig.KillReqEnabled = false;
-                            ViewModel.ServerConfig.TravelReqEnabled = false;
-                            ViewModel.ServerConfig.RideReqEnabled = false;
-                            ViewModel.ServerConfig.TameReqEnabled = false;
-                            ViewModel.ServerConfig.BreedReqEnabled = false;
-                            ViewModel.ServerConfig.InteractReqEnabled = false;
-                            ViewModel.ServerConfig.EntityInteractReqEnabled = false;
+                            
+                            // Use the helper method with false to disable all requirements
+                            UpdateAllRequirementSettings(false);
                             
                             ViewModel.HasFileChanges = true;
                             
                             // Force UI update
                             this.InvalidateVisual();
+                        }
+                        
+                        // Party Bonus methods
+                        private void HandlePartyBonusListBoxButtonClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+                        {
+                            if (e.Source is Button button && button.Name == "RemovePartyBonusButton" && button.Tag is string skillName)
+                            {
+                                RemovePartyBonusButton_Click(button, EventArgs.Empty);
+                                e.Handled = true;
+                            }
+                        }
+                        
+                        private void AddPartyBonus_Click(object? sender, EventArgs e)
+                        {
+                            if (string.IsNullOrWhiteSpace(_newPartyBonusSkill) || ViewModel.ServerConfig.PartyBonus == null)
+                                return;
+                            
+                            // Get the value from the NumericUpDown
+                            var bonusValue = this.FindControl<NumericUpDown>("NewPartyBonusValueUpDown");
+                            double value = bonusValue != null && bonusValue.Value.HasValue ? (double)bonusValue.Value.Value : 5.0;
+                            
+                            if (!ViewModel.ServerConfig.PartyBonus.ContainsKey(_newPartyBonusSkill))
+                            {
+                                // Add to the server config dictionary
+                                ViewModel.ServerConfig.PartyBonus[_newPartyBonusSkill] = value;
+                                ViewModel.HasFileChanges = true;
+                                
+                                // Clear input field
+                                var newPartyBonusSkillTextBox = this.FindControl<TextBox>("NewPartyBonusSkillTextBox");
+                                if (newPartyBonusSkillTextBox != null)
+                                    newPartyBonusSkillTextBox.Text = string.Empty;
+                                
+                                _newPartyBonusSkill = string.Empty;
+                                
+                                // Update the ListBox
+                                UpdatePartyBonusListBox();
+                            }
+                        }
+                        
+                        private void RemovePartyBonusButton_Click(object? sender, EventArgs e)
+                        {
+                            if (sender is Button button && button.Tag is string skillName)
+                            {
+                                if (ViewModel.ServerConfig.PartyBonus.ContainsKey(skillName))
+                                {
+                                    // Remove from the server config dictionary
+                                    ViewModel.ServerConfig.PartyBonus.Remove(skillName);
+                                    ViewModel.HasFileChanges = true;
+                                    
+                                    // Update the ListBox
+                                    UpdatePartyBonusListBox();
+                                }
+                            }
+                        }
+                        
+                        private void UpdatePartyBonusListBox()
+                        {
+                            if (ViewModel.ServerConfig.PartyBonus == null)
+                                ViewModel.ServerConfig.PartyBonus = new Dictionary<string, double>();
+                            
+                            // Create collection of KeyValuePairViewModels
+                            var items = new ObservableCollection<KeyValuePairViewModel>();
+                            foreach (var kvp in ViewModel.ServerConfig.PartyBonus)
+                            {
+                                items.Add(new KeyValuePairViewModel(kvp.Key, kvp.Value));
+                            }
+                            
+                            // Set the ItemsSource of the party bonus list box
+                            var partyBonusListBox = this.FindControl<ListBox>("PartyBonusListBox");
+                            if (partyBonusListBox != null)
+                            {
+                                partyBonusListBox.ItemsSource = items;
+                            }
                         }
     }
 }

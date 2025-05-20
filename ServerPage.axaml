@@ -5,10 +5,41 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pmmoEdit="clr-namespace:PMMOEdit"
+    xmlns:converters="clr-namespace:PMMOEdit.Converters"
+    xmlns:system="clr-namespace:System.Collections.Generic;assembly=System.Collections"
     mc:Ignorable="d"
     d:DesignWidth="800"
     d:DesignHeight="450"
     x:DataType="pmmoEdit:ServerPageViewModel">
+    
+    <UserControl.Resources>
+        <converters:PercentageConverter x:Key="PercentageConverter"/>
+
+        <DataTemplate x:Key="KeyValuePairTemplate" x:DataType="pmmoEdit:KeyValuePairViewModel">
+            <DockPanel LastChildFill="True" Width="300">
+                <Button Name="RemoveSkillModifierButton" 
+                        DockPanel.Dock="Right"
+                        Content="Remove"
+                        Margin="5,0,0,0"
+                        Tag="{Binding Key}"/>
+                <TextBlock Text="{Binding Key}" VerticalAlignment="Center" Width="150" Margin="0,0,10,0"/>
+                <TextBlock Text="{Binding SkillName}" VerticalAlignment="Center" Width="100" Margin="0,0,10,0"/>
+                <NumericUpDown Value="{Binding Value}" Minimum="0" Maximum="5" Increment="0.1"/>
+            </DockPanel>
+        </DataTemplate>
+        
+        <DataTemplate x:Key="PartyBonusTemplate" x:DataType="pmmoEdit:KeyValuePairViewModel">
+            <DockPanel LastChildFill="True" Width="300">
+                <Button Name="RemovePartyBonusButton" 
+                        DockPanel.Dock="Right"
+                        Content="Remove"
+                        Margin="5,0,0,0"
+                        Tag="{Binding Key}"/>
+                <TextBlock Text="{Binding Key}" VerticalAlignment="Center" Width="150" Margin="0,0,10,0"/>
+                <NumericUpDown Value="{Binding Value}" Minimum="0" Maximum="10" Increment="0.1"/>
+            </DockPanel>
+        </DataTemplate>
+    </UserControl.Resources>
 
     <Grid RowDefinitions="Auto,*">
         <StackPanel Grid.Row="0" Margin="20" Orientation="Vertical" Spacing="15">
@@ -41,9 +72,7 @@
         
         <Grid Grid.Row="1" Margin="20" Name="ServerContentGrid" IsVisible="False">
             <Grid RowDefinitions="*,Auto">
-                <!-- Tab Control for different config sections -->
                 <TabControl Grid.Row="0" Name="ConfigTabControl">
-                    <!-- General Tab -->
                     <TabItem Header="General">
                         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                             <StackPanel Spacing="15" Margin="10">
@@ -87,7 +116,7 @@
                                     
                                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Loss on Death:" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                     <TextBlock Grid.Row="2" Grid.Column="1" Text="ⓘ" ToolTip.Tip="Percentage of XP lost when a player dies" Margin="0,0,10,0" Foreground="#666666"/>
-                                    <NumericUpDown Grid.Row="2" Grid.Column="2" Value="{Binding ServerConfig.LossOnDeath, Converter={StaticResource PercentageConverter}}" Minimum="0" Maximum="100" Increment="1" FormatString="F0" Suffix="%"/>
+                                    <NumericUpDown Grid.Row="2" Grid.Column="2" Value="{Binding ServerConfig.LossOnDeath, Converter={StaticResource PercentageConverter}}" Minimum="0" Maximum="100" Increment="1" FormatString="0'%'"/>
                                     
                                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Lose Levels on Death:" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                     <TextBlock Grid.Row="3" Grid.Column="1" Text="ⓘ" ToolTip.Tip="If enabled, players can lose entire levels when they die" Margin="0,0,10,0" Foreground="#666666"/>
@@ -99,67 +128,66 @@
                                     
                                     <TextBlock Grid.Row="5" Grid.Column="0" Text="Global Modifier:" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                     <TextBlock Grid.Row="5" Grid.Column="1" Text="ⓘ" ToolTip.Tip="Global multiplier for all XP gains (100% = normal, 200% = double XP)" Margin="0,0,10,0" Foreground="#666666"/>
-                                    <NumericUpDown Grid.Row="5" Grid.Column="2" Value="{Binding ServerConfig.GlobalModifier, Converter={StaticResource PercentageConverter}}" Minimum="0" Maximum="500" Increment="10" FormatString="F0" Suffix="%"/>
+                                    <NumericUpDown Grid.Row="5" Grid.Column="2" Value="{Binding ServerConfig.GlobalModifier, Converter={StaticResource PercentageConverter}}" Minimum="0" Maximum="500" Increment="10" FormatString="0'%'"/>
                                 </Grid>
                                                                     
-                                                                    <Expander Header="Linear Levels Settings" IsExpanded="False">
-                                                                        <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto,Auto" Margin="10">
-                                                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Base XP:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="ⓘ" ToolTip.Tip="Base XP required for level 1 in linear formula" Margin="0,0,10,0" Foreground="#666666"/>
-                                                                            <NumericUpDown Grid.Row="0" Grid.Column="2" Value="{Binding ServerConfig.LinearBaseXP}" Minimum="0" Maximum="10000" Increment="10"/>
-                                                                            
-                                                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Per Level:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="ⓘ" ToolTip.Tip="Additional XP required for each level in linear formula" Margin="0,0,10,0" Foreground="#666666"/>
-                                                                            <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding ServerConfig.LinearPerLevel}" Minimum="0" Maximum="1000" Increment="10" FormatString="F1"/>
-                                                                        </Grid>
-                                                                    </Expander>
-                                                                                                        
-                                                                    <Expander Header="Exponential Levels Settings" IsExpanded="False">
-                                                                        <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto,Auto,Auto" Margin="10">
-                                                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Base XP:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="ⓘ" ToolTip.Tip="Base XP required for level 1 in exponential formula" Margin="0,0,10,0" Foreground="#666666"/>
-                                                                            <NumericUpDown Grid.Row="0" Grid.Column="2" Value="{Binding ServerConfig.ExpBaseXP}" Minimum="0" Maximum="10000" Increment="10"/>
-                                                                            
-                                                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Power Base:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="ⓘ" ToolTip.Tip="Base value for the exponential growth formula - higher values make leveling increasingly difficult" Margin="0,0,10,0" Foreground="#666666"/>
-                                                                            <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding ServerConfig.ExpPowerBase}" Minimum="1" Maximum="2" Increment="0.001" FormatString="F6"/>
-                                                                            
-                                                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Per Level:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="ⓘ" ToolTip.Tip="Multiplier applied to the exponential formula for each level" Margin="0,0,10,0" Foreground="#666666"/>
-                                                                            <NumericUpDown Grid.Row="2" Grid.Column="2" Value="{Binding ServerConfig.ExpPerLevel}" Minimum="0" Maximum="10" Increment="0.1" FormatString="F1"/>
-                                    </Grid>
-                                                                    </Expander>
+                                                                                                                                                                                                        <Expander Header="Linear Levels Settings" IsExpanded="False">
+                                                                                                                                                                                                            <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto,Auto" Margin="10">
+                                                                                                                                                                                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Base XP:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                                                                                                                                                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="ⓘ" ToolTip.Tip="Base XP required for level 1 in linear formula" Margin="0,0,10,0" Foreground="#666666"/>
+                                                                                                                                                                                                                <NumericUpDown Grid.Row="0" Grid.Column="2" Value="{Binding ServerConfig.LinearBaseXP}" Minimum="0" Maximum="10000" Increment="10"/>
+                                                                                                                                                                                                                
+                                                                                                                                                                                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Per Level:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                                                                                                                                                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="ⓘ" ToolTip.Tip="Additional XP required for each level in linear formula" Margin="0,0,10,0" Foreground="#666666"/>
+                                                                                                                                                                                                                <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding ServerConfig.LinearPerLevel}" Minimum="0" Maximum="1000" Increment="10" FormatString="F1"/>
+                                                                                                                                                                                                            </Grid>
+                                                                                                                                                                                                        </Expander>
+                                                                                                                                                                                                    
+                                                                                                                                                                                                        <Expander Header="Exponential Levels Settings" IsExpanded="False">
+                                                                                                                                                                                                            <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto,Auto,Auto" Margin="10">
+                                                                                                                                                                                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Base XP:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                                                                                                                                                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="ⓘ" ToolTip.Tip="Base XP required for level 1 in exponential formula" Margin="0,0,10,0" Foreground="#666666"/>
+                                                                                                                                                                                                                <NumericUpDown Grid.Row="0" Grid.Column="2" Value="{Binding ServerConfig.ExpBaseXP}" Minimum="0" Maximum="10000" Increment="10"/>
+                                                                                                                                                                                                                
+                                                                                                                                                                                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Power Base:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                                                                                                                                                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="ⓘ" ToolTip.Tip="Base value for the exponential growth formula - higher values make leveling increasingly difficult" Margin="0,0,10,0" Foreground="#666666"/>
+                                                                                                                                                                                                                <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding ServerConfig.ExpPowerBase}" Minimum="1" Maximum="2" Increment="0.001" FormatString="F6"/>
+                                                                                                                                                                                                                
+                                                                                                                                                                                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Per Level:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                                                                                                                                                                                <TextBlock Grid.Row="2" Grid.Column="1" Text="ⓘ" ToolTip.Tip="Multiplier applied to the exponential formula for each level" Margin="0,0,10,0" Foreground="#666666"/>
+                                                                                                                                                                                                                <NumericUpDown Grid.Row="2" Grid.Column="2" Value="{Binding ServerConfig.ExpPerLevel}" Minimum="0" Maximum="10" Increment="0.1" FormatString="F1"/>
+                                                                                                                                                                                                            </Grid>
+                                                                                                                                                                                                        </Expander>
                                                                     
-                                                                    <Expander Header="Skill Modifiers" IsExpanded="False">
-                                    <StackPanel Margin="10" Spacing="5">
-                                        <TextBlock Text="Set specific modifiers for individual skills" FontStyle="Italic" Opacity="0.7" Margin="0,0,0,10"/>
-                                        <TextBlock Text="Note: Either Global Modifier or Skill Modifiers will be used, not both" 
-                                                 FontStyle="Italic" Opacity="0.7" Margin="0,0,0,10"/>
-                                        
-                                        <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto">
-                                            <TextBlock Grid.Column="0" Text="Skill Name:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                            <TextBox Grid.Column="1" Name="NewSkillNameTextBox" Watermark="Enter skill name..."/>
-                                            <Button Grid.Column="2" Content="Add" Margin="10,0,0,0" Name="AddSkillModifierButton"/>
-                                        </Grid>
-                                        
-                                        <ListBox Name="SkillModifiersListBox" Height="150">
-                                            <ListBox.ItemTemplate>
-                                                <DataTemplate x:DataType="pmmoEdit:KeyValuePairViewModel">
-                                                    <Grid ColumnDefinitions="*,Auto,Auto">
-                                                        <TextBlock Grid.Column="0" Text="{Binding Key}" VerticalAlignment="Center"/>
-                                                        <NumericUpDown Grid.Column="1" Value="{Binding Value}" Minimum="0" Maximum="5" Increment="0.05" FormatString="F2" Width="100"/>
-                                                        <Button Grid.Column="2" Content="Remove" Margin="5,0,0,0" Name="RemoveSkillModifierButton" Tag="{Binding Key}"/>
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ListBox.ItemTemplate>
-                                        </ListBox>
-                                    </StackPanel>
-                                                                    </Expander>
+                                                                                                                                                                                                        <Expander Header="Skill Modifiers" IsExpanded="False">
+                                                                                                                                                                                                            <StackPanel Margin="10" Spacing="5">
+                                                                                                                                                                                                                <TextBlock Text="Set specific modifiers for individual skills" FontStyle="Italic" Opacity="0.7" Margin="0,0,0,10"/>
+                                                                                                                                                                                                                <TextBlock Text="Note: Either Global Modifier or Skill Modifiers will be used, not both" 
+                                                                                                                                                                                                                         FontStyle="Italic" Opacity="0.7" Margin="0,0,0,10"/>
+                                                                                                                                                                                                                
+                                                                                                                                                                                                                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto">
+                                                                                                                                                                                                                    <TextBlock Grid.Column="0" Text="Skill Name:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                                                                                                                                                                                    <TextBox Grid.Column="1" Name="NewSkillNameTextBox" Watermark="Enter skill name..."/>
+                                                                                                                                                                                                                    <Button Grid.Column="2" Content="Add" Margin="10,0,0,0" Name="AddSkillModifierButton"/>
+                                                                                                                                                                                                                </Grid>
+                                                                                                                                                                                                                
+                                                                                                                                                                                                                <ListBox Name="SkillModifiersListBox" Height="150" ItemsSource="{Binding SkillModifiers}">
+                                                                                                                                                                                                                    <ListBox.ItemTemplate>
+                                                                                                                                                                                                                        <DataTemplate x:DataType="pmmoEdit:KeyValuePairViewModel">
+                                                                                                                                                                                                                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                                                                                                                                                                                                                <TextBlock Grid.Column="0" Text="{Binding Key}" VerticalAlignment="Center"/>
+                                                                                                                                                                                                                                <NumericUpDown Grid.Column="1" Value="{Binding Value}" Minimum="0" Maximum="5" Increment="0.05" FormatString="F2" Width="100"/>
+                                                                                                                                                                                                                                <Button Grid.Column="2" Content="Remove" Margin="5,0,0,0" Name="RemoveSkillModifierButton" Tag="{Binding Key}"/>
+                                                                                                                                                                                                                            </Grid>
+                                                                                                                                                                                                                        </DataTemplate>
+                                                                                                                                                                                                                    </ListBox.ItemTemplate>
+                                                                                                                                                                                                                </ListBox>
+                                                                                                                                                                                                            </StackPanel>
+                                                                                                                                                                                                        </Expander>
                             </StackPanel>
                         </ScrollViewer>
                     </TabItem>
-                    
-                    <!-- Requirements Tab -->
+
                     <TabItem Header="Requirements">
                         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                             <StackPanel Spacing="15" Margin="10">
@@ -172,14 +200,14 @@
                                             ToolTip.Tip="Disable all requirements in one click"/>
                                 </StackPanel>
                                 
-                                <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" Margin="0,0,0,20">
+                                <Grid Name="RequirementsGrid" ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" Margin="0,0,0,20">
                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="WEAR Requirement:" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                     <TextBlock Grid.Row="0" Grid.Column="1" Text="ⓘ" ToolTip.Tip="If enabled, players need skill requirements to wear armor and equipment" Margin="0,0,10,0" Foreground="#666666"/>
-                                    <CheckBox Grid.Row="0" Grid.Column="2" IsChecked="{Binding ServerConfig.WearReqEnabled}"/>
+                                    <CheckBox Grid.Row="0" Grid.Column="2" IsChecked="{Binding ServerConfig.WearReqEnabled, Mode=TwoWay}"/>
                                     
                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="USE_ENCHANTMENT Requirement:" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                     <TextBlock Grid.Row="1" Grid.Column="1" Text="ⓘ" ToolTip.Tip="If enabled, players need skill requirements to use enchanted items" Margin="0,0,10,0" Foreground="#666666"/>
-                                    <CheckBox Grid.Row="1" Grid.Column="2" IsChecked="{Binding ServerConfig.UseEnchantmentReqEnabled}"/>
+                                    <CheckBox Grid.Row="1" Grid.Column="2" IsChecked="{Binding ServerConfig.UseEnchantmentReqEnabled, Mode=TwoWay}"/>
                                     
                                     <TextBlock Grid.Row="2" Grid.Column="0" Text="TOOL Requirement:" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                     <TextBlock Grid.Row="2" Grid.Column="1" Text="ⓘ" ToolTip.Tip="If enabled, players need skill requirements to use tools (pickaxes, shovels, etc.)" Margin="0,0,10,0" Foreground="#666666"/>
@@ -233,7 +261,6 @@
                         </ScrollViewer>
                     </TabItem>
                     
-                    <!-- XP Gains Tab -->
                     <TabItem Header="XP Gains">
                         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                             <StackPanel Spacing="15" Margin="10">
@@ -242,7 +269,7 @@
                                 <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto,Auto" Margin="0,0,0,20">
                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Reuse Penalty:" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                     <TextBlock Grid.Row="0" Grid.Column="1" Text="ⓘ" ToolTip.Tip="Penalty applied when repeatedly performing the same action (0% = no penalty, 100% = maximum penalty)" Margin="0,0,10,0" Foreground="#666666"/>
-                                    <NumericUpDown Grid.Row="0" Grid.Column="2" Value="{Binding ServerConfig.ReusePenalty, Converter={StaticResource PercentageConverter}}" Minimum="0" Maximum="100" Increment="5" FormatString="F0" Suffix="%"/>
+                                    <NumericUpDown Grid.Row="0" Grid.Column="2" Value="{Binding ServerConfig.ReusePenalty, Converter={StaticResource PercentageConverter}}" Minimum="0" Maximum="100" Increment="5" FormatString="0'%'"/>
                                     
                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Perks Plus Configs:" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                     <TextBlock Grid.Row="1" Grid.Column="1" Text="ⓘ" ToolTip.Tip="If enabled, uses the Perks Plus mod configuration for XP gains" Margin="0,0,10,0" Foreground="#666666"/>
@@ -264,6 +291,7 @@
                                             <TabControl Grid.Row="0">
                                                 <TabItem Header="Deal Damage">
                                                     <DataGrid Name="DealDamageXpGrid" AutoGenerateColumns="False" 
+                                                              ItemsSource="{Binding DealDamageXp}"
                                                               MaxHeight="300" Margin="0,10">
                                                         <DataGrid.Columns>
                                                             <DataGridTextColumn Header="Damage Type" 
@@ -274,7 +302,7 @@
                                                                               Binding="{Binding Value}" Width="*"/>
                                                             <DataGridTemplateColumn Width="Auto">
                                                                 <DataGridTemplateColumn.CellTemplate>
-                                                                    <DataTemplate>
+                                                                    <DataTemplate x:DataType="pmmoEdit:KeyValuePairViewModel">
                                                                         <Button Content="✕" Tag="{Binding}" 
                                                                                 Name="RemoveDamageXpButton"/>
                                                                     </DataTemplate>
@@ -285,6 +313,7 @@
                                                 </TabItem>
                                                 <TabItem Header="Receive Damage">
                                                     <DataGrid Name="ReceiveDamageXpGrid" AutoGenerateColumns="False" 
+                                                              ItemsSource="{Binding ReceiveDamageXp}"
                                                               MaxHeight="300" Margin="0,10">
                                                         <DataGrid.Columns>
                                                             <DataGridTextColumn Header="Damage Type" 
@@ -295,7 +324,7 @@
                                                                               Binding="{Binding Value}" Width="*"/>
                                                             <DataGridTemplateColumn Width="Auto">
                                                                 <DataGridTemplateColumn.CellTemplate>
-                                                                    <DataTemplate>
+                                                                    <DataTemplate x:DataType="pmmoEdit:KeyValuePairViewModel">
                                                                         <Button Content="✕" Tag="{Binding}" 
                                                                                 Name="RemoveReceiveDamageXpButton"/>
                                                                     </DataTemplate>
@@ -327,6 +356,7 @@
                                             </Grid.RowDefinitions>
                                             
                                             <DataGrid Name="JumpXpGrid" AutoGenerateColumns="False" 
+                                                     ItemsSource="{Binding JumpXp}"
                                                      MaxHeight="300" Margin="0,10" Grid.Row="0">
                                                 <DataGrid.Columns>
                                                     <DataGridTextColumn Header="Jump Type" 
@@ -337,7 +367,7 @@
                                                                       Binding="{Binding Value}" Width="*"/>
                                                     <DataGridTemplateColumn Width="Auto">
                                                         <DataGridTemplateColumn.CellTemplate>
-                                                            <DataTemplate>
+                                                            <DataTemplate x:DataType="pmmoEdit:KeyValuePairViewModel">
                                                                 <Button Content="✕" Tag="{Binding}" 
                                                                         Name="RemoveJumpXpButton"/>
                                                             </DataTemplate>
@@ -367,6 +397,7 @@
                                             </Grid.RowDefinitions>
                                             
                                             <DataGrid Name="PlayerActionXpGrid" AutoGenerateColumns="False" 
+                                                     ItemsSource="{Binding PlayerActionXp}"
                                                      MaxHeight="300" Margin="0,10" Grid.Row="0">
                                                 <DataGrid.Columns>
                                                     <DataGridTextColumn Header="Action Type" 
@@ -377,7 +408,7 @@
                                                                       Binding="{Binding Value}" Width="*"/>
                                                     <DataGridTemplateColumn Width="Auto">
                                                         <DataGridTemplateColumn.CellTemplate>
-                                                            <DataTemplate>
+                                                            <DataTemplate x:DataType="pmmoEdit:KeyValuePairViewModel">
                                                                 <Button Content="✕" Tag="{Binding}" 
                                                                         Name="RemovePlayerActionXpButton"/>
                                                             </DataTemplate>
@@ -403,7 +434,7 @@
                         </ScrollViewer>
                     </TabItem>
                     
-                    <!-- Vein Miner Tab -->
+
                     <TabItem Header="Vein Miner">
                         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                             <StackPanel Spacing="15" Margin="10">
@@ -435,50 +466,36 @@
                                     <NumericUpDown Grid.Row="5" Grid.Column="2" Value="{Binding ServerConfig.BaseVeinCapacity}" Minimum="0" Maximum="1000" Increment="1"/>
                                 </Grid>
                                                                     
-                                                                    <Expander Header="Vein Blacklist" IsExpanded="False">
+                                <Expander Header="Vein Blacklist" IsExpanded="False">
                                     <StackPanel Margin="10" Spacing="5">
                                         <TextBlock Text="Tools in this list will not trigger vein mining" 
                                                   FontStyle="Italic" Opacity="0.7" Margin="0,0,0,10"/>
                                         
-                                                                            <ListBox Name="VeinBlacklistBox" MaxHeight="150" Margin="0,0,0,10"
-                                                                                    ItemsSource="{Binding ServerConfig.VeinBlacklist}">
-                                                                                <ListBox.ItemTemplate>
-                                                                                    <DataTemplate>
-                                                                                        <Grid ColumnDefinitions="*,Auto">
-                                                                                            <TextBlock Grid.Column="0" Text="{Binding}" VerticalAlignment="Center"/>
-                                                                                            <Button Grid.Column="1" Content="✕" Name="RemoveVeinBlacklistButton" 
-                                                                                                    Tag="{Binding}" Margin="10,0,0,0"/>
-                                                                                        </Grid>
-                                                                                    </DataTemplate>
-                                                                                </ListBox.ItemTemplate>
-                                                                            </ListBox>
-                                                                            
-                                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
-                                            <TextBox Grid.Column="0" Name="NewVeinBlacklistItemTextBox" Watermark="Enter item ID (e.g. minecraft:diamond_pickaxe)"/>
-                                            <Button Grid.Column="1" Content="Add" Margin="10,0,0,0" Name="AddVeinBlacklistButton"/>
-                                        </Grid>
-                                        
-                                        <ListBox Name="VeinBlacklistBox" Height="150" ItemsSource="{Binding ServerConfig.VeinBlacklist}">
-                                            <ListBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Grid ColumnDefinitions="*,Auto">
-                                                        <TextBlock Grid.Column="0" Text="{Binding}" VerticalAlignment="Center"/>
-                                                        <Button Grid.Column="1" Content="Remove" Margin="5,0,0,0"
-                                                                Name="RemoveVeinBlacklistButton" Tag="{Binding}"/>
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ListBox.ItemTemplate>
-                                        </ListBox>
-                                    </StackPanel>
-                                                                    </Expander>
+                                                                                                                                                                                                                                            <ListBox Name="VeinBlacklistBox" MaxHeight="150" Margin="0,0,0,10"
+                                                                                                                                                                                                                                                    ItemsSource="{Binding ServerConfig.VeinBlacklist}">
+                                                                                                                                                                                                                                                <ListBox.ItemTemplate>
+                                                                                                                                                                                                                                                    <DataTemplate x:DataType="x:String">
+                                                                                                                                                                                                                                                        <Grid ColumnDefinitions="*,Auto">
+                                                                                                                                                                                                                                                            <TextBlock Grid.Column="0" Text="{Binding}" VerticalAlignment="Center"/>
+                                                                                                                                                                                                                                                            <Button Grid.Column="1" Content="✕" Name="RemoveVeinBlacklistButton" 
+                                                                                                                                                                                                                                                                    Tag="{Binding}" Margin="10,0,0,0"/>
+                                                                                                                                                                                                                                                        </Grid>
+                                                                                                                                                                                                                                                    </DataTemplate>
+                                                                                                                                                                                                                                                </ListBox.ItemTemplate>
+                                                                                                                                                                                                                                            </ListBox>
+                                                                                                                                                                                                                                                
+                                                                                                                                                                                                                                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
+                                                                                                                                                                                                                                                <TextBox Grid.Column="0" Name="NewVeinBlacklistItemTextBox" Watermark="Enter item ID (e.g. minecraft:diamond_pickaxe)"/>
+                                                                                                                                                                                                                                                <Button Grid.Column="1" Content="Add" Margin="10,0,0,0" Name="AddVeinBlacklistButton"/>
+                                                                                                                                                                                                                                            </Grid>
+                                                                                                                                                                                                </StackPanel>
+                                                                                                                                                                                            </Expander>
                             </StackPanel>
                         </ScrollViewer>
                     </TabItem>
-                                                    
-                                                    <!-- Party Tab -->
-                                                    <TabItem Header="Party">
-                                                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                                                            <StackPanel Spacing="15" Margin="10">
+                                                                                            <TabItem Header="Party">
+                                                                                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                                                                                    <StackPanel Spacing="15" Margin="10">
                                 <TextBlock Text="Party Settings" FontSize="20" FontWeight="Bold" Margin="0,0,0,10"/>
                                 
                                 <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto" Margin="0,0,0,20">
@@ -491,9 +508,9 @@
                                 <TextBlock Text="These values are multiplied by the party size to determine the bonus XP" 
                                            FontStyle="Italic" Opacity="0.7" Margin="0,0,0,10"/>
                                 
-                                <ListBox Name="PartyBonusListBox" Margin="0,0,0,10" MaxHeight="200">
+                                <ListBox Name="PartyBonusListBox" ItemsSource="{Binding PartyBonuses}" Margin="0,0,0,10" MaxHeight="200">
                                     <ListBox.ItemTemplate>
-                                        <DataTemplate>
+                                        <DataTemplate x:DataType="pmmoEdit:KeyValuePairViewModel">
                                             <Grid ColumnDefinitions="*,Auto,Auto">
                                                 <TextBlock Grid.Column="0" Text="{Binding Key}" VerticalAlignment="Center"/>
                                                 <NumericUpDown Grid.Column="1" Value="{Binding Value}" Minimum="0" Maximum="100" 
@@ -513,14 +530,14 @@
                                                   Watermark="Bonus %"/>
                                     <Button Grid.Column="2" Content="Add" Name="AddPartyBonusButton" Margin="5,0,0,0"/>
                                 </Grid>
-                                                            </StackPanel>
-                                                        </ScrollViewer>
-                                                    </TabItem>
+                                                                                        </StackPanel>
+                                                                                    </ScrollViewer>
+                                                                                </TabItem>
                                                     
-                                                    <!-- Mob Scaling Tab -->
-                                                    <TabItem Header="Mob Scaling">
-                                                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                                                            <StackPanel Spacing="15" Margin="10">
+                                                                                            <!-- Mob Scaling Tab -->
+                                                                                            <TabItem Header="Mob Scaling">
+                                                                                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                                                                                    <StackPanel Spacing="15" Margin="10">
                                 <TextBlock Text="Mob Scaling Settings" FontSize="20" FontWeight="Bold" Margin="0,0,0,10"/>
                                 
                                 <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,0,0,20">
@@ -561,12 +578,11 @@
                                         </Grid>
                                     </StackPanel>
                                 </Expander>
-                                                            </StackPanel>
-                                                        </ScrollViewer>
-                                                    </TabItem>
+                                                                                            </StackPanel>
+                                                                                        </ScrollViewer>
+                                                                                    </TabItem>
                 </TabControl>
-                
-                <!-- Action buttons at the bottom -->
+
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Margin="0,20,0,0">
                     <Button x:Name="ApplyChangesButton" Content="Apply Changes"/>
                     <Button x:Name="ResetDefaultsButton" Content="Reset to Defaults"/>
@@ -600,7 +616,6 @@
             <Setter Property="RenderTransform" Value="scale(0.95)"/>
         </Style>
         
-        <!-- Style for TabItems to make selected ones bold -->
         <Style Selector="TabItem">
             <Setter Property="FontWeight" Value="Normal"/>
             <Setter Property="Padding" Value="10,5"/>

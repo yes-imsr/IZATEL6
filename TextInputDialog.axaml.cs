@@ -11,7 +11,7 @@ namespace PMMOEdit
     {
         private TaskCompletionSource<string> _tcs = new TaskCompletionSource<string>();
         
-        public string Title { get; set; } = "Input";
+        public new string Title { get; set; } = "Input";
         public string Message { get; set; } = "Please enter a value:";
         public string InitialText { get; set; } = "";
         
@@ -23,21 +23,27 @@ namespace PMMOEdit
             var cancelButton = this.FindControl<Button>("CancelButton");
             var inputTextBox = this.FindControl<TextBox>("InputTextBox");
             
-            okButton.Click += (sender, args) => 
+            if (okButton != null && inputTextBox != null)
             {
-                _tcs.SetResult(inputTextBox.Text);
-                Close();
-            };
+                okButton.Click += (sender, args) => 
+                {
+                    _tcs.SetResult(inputTextBox.Text ?? string.Empty);
+                    Close();
+                };
+            }
             
-            cancelButton.Click += (sender, args) => 
+            if (cancelButton != null)
             {
-                _tcs.SetResult("");
-                Close();
-            };
+                cancelButton.Click += (sender, args) => 
+                {
+                    _tcs.SetResult(string.Empty);
+                    Close();
+                };
+            }
             
             this.Closing += (sender, args) => 
             {
-                _tcs.TrySetResult("");
+                _tcs.TrySetResult(string.Empty);
             };
         }
 
@@ -54,14 +60,21 @@ namespace PMMOEdit
             var messageText = this.FindControl<TextBlock>("MessageText");
             var inputTextBox = this.FindControl<TextBox>("InputTextBox");
             
-            titleText.Text = Title;
-            messageText.Text = Message;
-            inputTextBox.Text = InitialText;
-            inputTextBox.CaretIndex = InitialText.Length;
-            inputTextBox.Focus();
+            if (titleText != null)
+                titleText.Text = Title;
+                
+            if (messageText != null)
+                messageText.Text = Message;
+                
+            if (inputTextBox != null)
+            {
+                inputTextBox.Text = InitialText;
+                inputTextBox.CaretIndex = InitialText.Length;
+                inputTextBox.Focus();
+            }
         }
         
-        public Task<string> ShowDialog(Window owner)
+        public new Task<string> ShowDialog(Window owner)
         {
             this.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             _tcs = new TaskCompletionSource<string>();

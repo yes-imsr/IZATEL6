@@ -84,7 +84,7 @@ namespace PMMOEdit
         }
         
         // Show dialog with a specific parent window
-        public static Task Show(Window parent, string message, string title, MessageBoxButtons buttons = MessageBoxButtons.Ok)
+        public static Task Show(Window? parent, string message, string title, MessageBoxButtons buttons = MessageBoxButtons.Ok)
         {
             var msgBox = new Window
             {
@@ -135,7 +135,11 @@ namespace PMMOEdit
                     tcs.SetResult("Cancel");
             };
             
-            msgBox.ShowDialog(parent);
+            if (parent != null)
+                msgBox.ShowDialog(parent);
+            else
+                msgBox.Show();
+                
             return tcs.Task;
         }
     }
