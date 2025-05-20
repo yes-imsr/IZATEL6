@@ -14,7 +14,29 @@
             <TextBlock Text="This page allows you to manage data for your PMMO configuration."
                        Margin="0,0,0,20"/>
                        
-            <!-- Add your Data page content here -->
+            <!-- Datapack Management Section -->
+            <Border Background="#F0F8FF" 
+                    CornerRadius="5" 
+                    Padding="15" 
+                    Margin="0,10,0,20">
+                <StackPanel>
+                    <TextBlock Text="Datapack Management" 
+                               FontWeight="Bold" 
+                               FontSize="18"
+                               Margin="0,0,0,10"/>
+                    <TextBlock Text="Create and manage Minecraft datapacks for custom PMMO configurations."
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,15"/>
+                    <Button Content="Create New Datapack" 
+                            Name="CreateDatapackButton"
+                            Padding="10,5"
+                            Background="#4CAF50"
+                            Foreground="White"
+                            Margin="0,5,0,10"/>
+                </StackPanel>
+            </Border>
+                       
+            <!-- Original Data Options Section -->
             <Border Background="#F5F5F5" 
                     CornerRadius="5" 
                     Padding="15" 
