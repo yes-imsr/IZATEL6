@@ -95,5 +95,27 @@ public partial class MainWindow : Window
                 }
             };
         }
+        
+        var dataButton = this.FindControl<Button>("DataButton");
+        if (dataButton != null)
+        {
+            dataButton.Click += (sender, _) =>
+            {
+                var pageContent = this.FindControl<ContentControl>("PageContent");
+                if (pageContent != null)
+                {
+                    pageContent.Content = new DataPage();
+                }
+                
+                if (_activeButton != null)
+                    _activeButton.Classes.Remove("active");
+                
+                if (sender is Button button)
+                {
+                    button.Classes.Add("active");
+                    _activeButton = button;
+                }
+            };
+        }
     }
 }
