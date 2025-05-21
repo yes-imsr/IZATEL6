@@ -9,6 +9,16 @@ public partial class MainWindow : Window
 {
     private Button? _activeButton;
 
+    // Method to set the page content
+    public void SetPageContent(object content)
+    {
+        var pageContent = this.FindControl<ContentControl>("PageContent");
+        if (pageContent != null)
+        {
+            pageContent.Content = content;
+        }
+    }
+    
     public MainWindow()
     {
         InitializeComponent();

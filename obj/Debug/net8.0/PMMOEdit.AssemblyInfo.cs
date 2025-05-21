@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PMMOEdit")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fb8d192f0d1b28f5eafb4f31e78d472d0550263b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5e0d3e8f3615e55ab952853500d42269f77ba216")]
 [assembly: System.Reflection.AssemblyProductAttribute("PMMOEdit")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PMMOEdit")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

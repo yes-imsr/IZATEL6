@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -485,10 +486,23 @@ https://minecraft.wiki/w/Data_pack
             if (topLevel is Window parentWindow)
             {
                 await messageBox.ShowDialog(parentWindow);
+                
+                // After dismissing the success message, navigate to the LootTableEditor
+                // if the Loot Tables template was used
+                if (templateType == "loot")
+                {
+                    NavigateToLootTableEditor(datapackPath, datapackName);
+                }
             }
             else
             {
                 messageBox.Show();
+                
+                // Navigate to editor after showing message box (non-modal version)
+                if (templateType == "loot")
+                {
+                    NavigateToLootTableEditor(datapackPath, datapackName);
+                }
             }
         }
         catch (Exception ex)
@@ -521,12 +535,183 @@ https://minecraft.wiki/w/Data_pack
         }
     }
     
+    private void NavigateToLootTableEditor(string datapackPath, string datapackName)
+    {
+        try
+        {
+            // Find the MainWindow to change the page
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel is MainWindow mainWindow)
+            {
+                // Create a new LootTableEditor instance
+                var lootTableEditor = new LootTableEditor();
+                
+                // Update the datapack name display in the editor
+                var datapackNameDisplay = lootTableEditor.FindControl<TextBlock>("DatapackNameDisplay");
+                if (datapackNameDisplay != null)
+                {
+                    datapackNameDisplay.Text = $" - {datapackName}";
+                }
+                
+                // Load the loot table files from the datapack directory
+                var lootTableTreeView = lootTableEditor.FindControl<TreeView>("LootTableTreeView");
+                if (lootTableTreeView != null)
+                {
+                    try
+                    {
+                        // Clear existing items (they may reference missing images)
+                        lootTableTreeView.Items?.Clear();
+                        
+                        // Create new tree structure
+                        var entitiesRoot = new TreeViewItem 
+                        { 
+                            Header = "Entity Loot Tables", 
+                            FontWeight = FontWeight.Bold,
+                            Foreground = new SolidColorBrush(Colors.White)
+                        };
+                        var chestsRoot = new TreeViewItem 
+                        { 
+                            Header = "Chest Loot Tables", 
+                            FontWeight = FontWeight.Bold,
+                            Foreground = new SolidColorBrush(Colors.White)
+                        };
+                        var blocksRoot = new TreeViewItem 
+                        { 
+                            Header = "Block Loot Tables", 
+                            FontWeight = FontWeight.Bold,
+                            Foreground = new SolidColorBrush(Colors.White)
+                        };
+                        
+                        // Set IsExpanded for these root nodes
+                        entitiesRoot.IsExpanded = true;
+                        chestsRoot.IsExpanded = true;
+                        blocksRoot.IsExpanded = true;
+                        
+                        // Get the path to the loot_tables directory in the datapack
+                        string lootTablesBasePath = Path.Combine(datapackPath, "data", datapackName.ToLower(), "loot_tables");
+                        
+                        // Load entity loot tables
+                        string entitiesPath = Path.Combine(lootTablesBasePath, "entities");
+                        if (Directory.Exists(entitiesPath))
+                        {
+                            foreach (var file in Directory.GetFiles(entitiesPath, "*.json"))
+                            {
+                                var item = new TreeViewItem 
+                                { 
+                                    Header = Path.GetFileName(file), 
+                                    FontWeight = FontWeight.Bold,
+                                    Foreground = new SolidColorBrush(Colors.White)
+                                };
+                                entitiesRoot.Items?.Add(item);
+                            }
+                                                    }
+                                                    var addNewEntity = new TreeViewItem 
+                                                    { 
+                            Header = "+ Add New...", 
+                            FontWeight = FontWeight.Bold,
+                            Foreground = new SolidColorBrush(Colors.White)
+                                                    };
+                        entitiesRoot.Items?.Add(addNewEntity);
+                        
+                        // Load chest loot tables
+                        string chestsPath = Path.Combine(lootTablesBasePath, "chests");
+                        if (Directory.Exists(chestsPath))
+                        {
+                            foreach (var file in Directory.GetFiles(chestsPath, "*.json"))
+                            {
+                                var item = new TreeViewItem 
+                                { 
+                                    Header = Path.GetFileName(file), 
+                                    FontWeight = FontWeight.Bold,
+                                    Foreground = new SolidColorBrush(Colors.White)
+                                };
+                                chestsRoot.Items?.Add(item);
+                            }
+                                                    }
+                                                    var addNewChest = new TreeViewItem 
+                                                    { 
+                            Header = "+ Add New...", 
+                            FontWeight = FontWeight.Bold,
+                            Foreground = new SolidColorBrush(Colors.White)
+                                                    };
+                        chestsRoot.Items?.Add(addNewChest);
+                        
+                        // Load block loot tables
+                        string blocksPath = Path.Combine(lootTablesBasePath, "blocks");
+                        if (Directory.Exists(blocksPath))
+                        {
+                            foreach (var file in Directory.GetFiles(blocksPath, "*.json"))
+                            {
+                                var item = new TreeViewItem 
+                                { 
+                                    Header = Path.GetFileName(file), 
+                                    FontWeight = FontWeight.Bold,
+                                    Foreground = new SolidColorBrush(Colors.White)
+                                };
+                                blocksRoot.Items?.Add(item);
+                            }
+                                                    }
+                                                    var addNewBlock = new TreeViewItem 
+                                                    { 
+                            Header = "+ Add New...", 
+                            FontWeight = FontWeight.Bold,
+                            Foreground = new SolidColorBrush(Colors.White)
+                                                    };
+                        blocksRoot.Items?.Add(addNewBlock);
+                        
+                        // Add all categories to the TreeView
+                        lootTableTreeView.Items?.Add(entitiesRoot);
+                        lootTableTreeView.Items?.Add(chestsRoot);
+                        lootTableTreeView.Items?.Add(blocksRoot);
+                    }
+                    catch (Exception ex)
+                    {
+                        // If there's an error loading the files, just use default tree items
+                        // The default items should be defined in XAML, but we won't access them directly to avoid image errors
+                    }
+                }
+                
+                // Set the LootTableEditor as the current page content
+                mainWindow.SetPageContent(lootTableEditor);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Show an error message if navigation fails
+            var messageBox = new Window
+            {
+                Title = "Error",
+                Width = 350,
+                Height = 150,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Content = new TextBlock
+                {
+                    Text = $"Failed to open Loot Table Editor: {ex.Message}",
+                    TextWrapping = TextWrapping.Wrap,
+                    Margin = new Avalonia.Thickness(15)
+                }
+            };
+            
+            // Find parent window for the dialog
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel is Window parentWindow)
+            {
+                messageBox.ShowDialog(parentWindow);
+            }
+            else
+            {
+                messageBox.Show();
+            }
+        }
+    }
+    
     private async Task CreateLootTablesTemplate(string namespacePath, string datapackName)
     {
         // Create loot_tables subfolders
         var lootTablesPath = Path.Combine(namespacePath, "loot_tables");
         Directory.CreateDirectory(Path.Combine(lootTablesPath, "entities"));
         Directory.CreateDirectory(Path.Combine(lootTablesPath, "chests"));
+        Directory.CreateDirectory(Path.Combine(lootTablesPath, "blocks"));
         
         // Create example entity loot table (zombie with custom loot)
         var zombieLootTableContent = @"{

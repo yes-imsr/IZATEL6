@@ -1,0 +1,472 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:Avalonia.Controls"
+             xmlns:avalonia="clr-namespace:Avalonia;assembly=Avalonia.Controls"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
+             x:Class="PMMOEdit.LootTableEditor">
+    <UserControl.Styles>
+        <Style Selector="TreeViewItem">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <!-- This style targets the header presenter of TreeViewItems -->
+        <Style Selector="TreeViewItem /template/ ContentPresenter#PART_HeaderPresenter">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </UserControl.Styles>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Top Bar with Title and Help Button -->
+        <Grid Grid.Row="0" Background="Black" Height="60">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0">
+                <TextBlock Text="Loot Table Editor" FontSize="22" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Name="DatapackNameDisplay" Text=" - My Datapack" FontSize="18" Foreground="#BDC3C7" Margin="5,0,0,0"/>
+            </StackPanel>
+            
+            <Button Grid.Column="1" Name="HelpButton" 
+                    Content="Need Help?" 
+                    Margin="0,0,20,0"
+                    Padding="15,8"
+                    Background="#3498DB"
+                    Foreground="White"
+                    CornerRadius="20"/>
+        </Grid>
+        
+        <!-- Main Content Area -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Left Sidebar - Navigation and File Tree -->
+            <Grid Grid.Column="0" Background="Black">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Actions Panel -->
+                <StackPanel Grid.Row="0" Margin="15,15,15,0">
+                    <Button Content="+ New Loot Table" 
+                            Name="NewLootTableButton"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,8"
+                            Margin="0,0,0,8"
+                            Background="#27AE60"
+                            Foreground="White"/>
+                    
+                    <ComboBox Name="LootTableTypeSelector" 
+                              HorizontalAlignment="Stretch" 
+                              Margin="0,10,0,15"
+                              PlaceholderText="Select Type">
+                        <ComboBoxItem>Entity Loot Tables</ComboBoxItem>
+                        <ComboBoxItem>Chest Loot Tables</ComboBoxItem>
+                        <ComboBoxItem>Block Loot Tables</ComboBoxItem>
+                    </ComboBox>
+                </StackPanel>
+                
+                <!-- File Tree -->
+                <TreeView Grid.Row="1" Name="LootTableTreeView" 
+                          Background="Black" 
+                          Foreground="White"
+                          FontWeight="Bold"
+                          Margin="0,10,0,0">
+                    <TreeView.Styles>
+                        <Style Selector="TreeViewItem">
+                            <Setter Property="Foreground" Value="White"/>
+                        </Style>
+                        <Style Selector="TreeViewItem TextBlock">
+                            <Setter Property="Foreground" Value="White"/>
+                        </Style>
+                    </TreeView.Styles>
+                    <TreeViewItem Header="Entity Loot Tables" IsExpanded="True" FontWeight="Bold" Foreground="White">
+                        <TreeViewItem Header="zombie_example.json" FontWeight="Bold" Foreground="White"/>
+                        <TreeViewItem Header="+ Add New..." FontWeight="Bold" Foreground="White"/>
+                    </TreeViewItem>
+                    <TreeViewItem Header="Chest Loot Tables" IsExpanded="True" FontWeight="Bold" Foreground="White">
+                        <TreeViewItem Header="custom_dungeon.json" FontWeight="Bold" Foreground="White"/>
+                        <TreeViewItem Header="+ Add New..." FontWeight="Bold" Foreground="White"/>
+                    </TreeViewItem>
+                    <TreeViewItem Header="Block Loot Tables" FontWeight="Bold" Foreground="White">
+                        <TreeViewItem Header="+ Add New..." FontWeight="Bold" Foreground="White"/>
+                    </TreeViewItem>
+                </TreeView>
+            </Grid>
+            
+            <!-- Main Editor Area -->
+            <Grid Grid.Column="1" Background="#ECF0F1">
+                <TabControl Name="EditorTabControl">
+                    <!-- Visual Editor Tab -->
+                    <TabItem Header="Visual Editor">
+                        <ScrollViewer>
+                            <StackPanel Margin="20">
+                                <!-- Header Section -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <StackPanel Grid.Column="0">
+                                        <TextBox Name="LootTableTitleTextBox" 
+                                                 Text="zombie_example.json" 
+                                                 FontSize="20" 
+                                                 FontWeight="Bold"
+                                                 Margin="0,0,0,5"/>
+                                        
+                                        <ComboBox Name="LootTableContextType"
+                                                  SelectedIndex="0"
+                                                  Width="200"
+                                                  HorizontalAlignment="Left">
+                                            <ComboBoxItem>minecraft:entity</ComboBoxItem>
+                                            <ComboBoxItem>minecraft:chest</ComboBoxItem>
+                                            <ComboBoxItem>minecraft:block</ComboBoxItem>
+                                            <ComboBoxItem>minecraft:fishing</ComboBoxItem>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Button Content="Save" 
+                                                Name="SaveButton"
+                                                Margin="5,0"
+                                                Padding="15,8"
+                                                Background="#27AE60"
+                                                Foreground="White"/>
+                                        
+                                        <Button Content="Test" 
+                                                Name="TestButton"
+                                                Margin="5,0"
+                                                Padding="15,8"
+                                                Background="#9B59B6"
+                                                Foreground="White"/>
+                                    </StackPanel>
+                                </Grid>
+                                
+                                <Border Background="White" 
+                                        Margin="0,20,0,20" 
+                                        Padding="15" 
+                                        CornerRadius="5"
+                                        BorderBrush="#BDC3C7"
+                                        BorderThickness="1">
+                                    
+                                    <StackPanel>
+                                        <TextBlock Text="Loot Pool #1" 
+                                                   FontSize="18" 
+                                                   FontWeight="Bold"
+                                                   Margin="0,0,0,15"/>
+                                        
+                                        <!-- Rolls Configuration -->
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="100"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="Rolls:" 
+                                                       VerticalAlignment="Center"/>
+                                            
+                                            <Grid Grid.Column="1">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                
+                                                <RadioButton Grid.Column="0" 
+                                                             Name="RollsFixedRadio"
+                                                             Content="Fixed" 
+                                                             IsChecked="True"
+                                                             GroupName="RollsType"
+                                                             VerticalAlignment="Center"/>
+                                                
+                                                <NumericUpDown Grid.Column="1"
+                                                              Value="1"
+                                                              Minimum="1"
+                                                              Maximum="100"
+                                                              Width="100"
+                                                              Margin="10,0,20,0"/>
+                                                
+                                                <RadioButton Grid.Column="2" 
+                                                             Name="RollsRangeRadio"
+                                                             Content="Range" 
+                                                             GroupName="RollsType"
+                                                             VerticalAlignment="Center"/>
+                                                
+                                                <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="10,0,0,0">
+                                                    <NumericUpDown Value="1"
+                                                                  Minimum="0"
+                                                                  Maximum="100"
+                                                                  Width="80"
+                                                                  IsEnabled="{Binding ElementName=RollsRangeRadio, Path=IsChecked}"/>
+                                                    
+                                                    <TextBlock Text=" to " VerticalAlignment="Center" Margin="5,0"/>
+                                                    
+                                                    <NumericUpDown Value="3"
+                                                                  Minimum="1"
+                                                                  Maximum="100"
+                                                                  Width="80"
+                                                                  IsEnabled="{Binding ElementName=RollsRangeRadio, Path=IsChecked}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Grid>
+                                        
+                                        <!-- Entry Table -->
+                                        <TextBlock Text="Loot Entries" 
+                                                   FontWeight="Bold"
+                                                   Margin="0,0,0,10"/>
+                                        
+                                        <Border BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,15">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="*"/>
+                                                </Grid.RowDefinitions>
+                                                
+                                                <!-- Table Header -->
+                                                <Grid Grid.Row="0" Background="#F5F5F5">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="50"/>
+                                                        <ColumnDefinition Width="200"/>
+                                                        <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    
+                                                    <TextBlock Grid.Column="0" Text="#" Margin="10,8" FontWeight="Bold"/>
+                                                    <TextBlock Grid.Column="1" Text="Item" Margin="10,8" FontWeight="Bold"/>
+                                                    <TextBlock Grid.Column="2" Text="Weight" Margin="10,8" FontWeight="Bold"/>
+                                                    <TextBlock Grid.Column="3" Text="Chance" Margin="10,8" FontWeight="Bold"/>
+                                                    <TextBlock Grid.Column="4" Text="Functions" Margin="10,8" FontWeight="Bold"/>
+                                                </Grid>
+                                                
+                                                <!-- Table Rows -->
+                                                <StackPanel Grid.Row="1">
+                                                    <!-- Entry 1 -->
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="50"/>
+                                                            <ColumnDefinition Width="200"/>
+                                                            <ColumnDefinition Width="100"/>
+                                                            <ColumnDefinition Width="100"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        
+                                                        <TextBlock Grid.Column="0" Text="1" Margin="10,8"/>
+                                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5">
+                                                            <Border Width="32" Height="32" Background="#F7F7F7" BorderBrush="#CCCCCC" BorderThickness="1">
+                                                                <TextBlock Text="RF" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            </Border>
+                                                            <TextBlock Text="minecraft:rotten_flesh" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                                        </StackPanel>
+                                                        <TextBlock Grid.Column="2" Text="10" Margin="10,8"/>
+                                                        <TextBlock Grid.Column="3" Text="67%" Margin="10,8" Foreground="#27AE60"/>
+                                                        <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="5">
+                                                            <Button Content="Set Count" 
+                                                                    Padding="5,2"
+                                                                    Margin="0,0,5,0"
+                                                                    Background="#E0E0E0"/>
+                                                            <Button Content="Looting" 
+                                                                    Padding="5,2"
+                                                                    Background="#E0E0E0"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                    
+                                                    <!-- Entry 2 -->
+                                                    <Grid Background="#F9F9F9">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="50"/>
+                                                            <ColumnDefinition Width="200"/>
+                                                            <ColumnDefinition Width="100"/>
+                                                            <ColumnDefinition Width="100"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        
+                                                        <TextBlock Grid.Column="0" Text="2" Margin="10,8"/>
+                                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5">
+                                                            <Border Width="32" Height="32" Background="#F7F7F7" BorderBrush="#CCCCCC" BorderThickness="1">
+                                                                <TextBlock Text="Fe" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            </Border>
+                                                            <TextBlock Text="minecraft:iron_ingot" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                                        </StackPanel>
+                                                        <TextBlock Grid.Column="2" Text="1" Margin="10,8"/>
+                                                        <TextBlock Grid.Column="3" Text="7%" Margin="10,8" Foreground="#E74C3C"/>
+                                                        <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="5">
+                                                            <Button Content="Random Chance" 
+                                                                    Padding="5,2"
+                                                                    Background="#E0E0E0"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                    
+                                                    <!-- Entry 3 -->
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="50"/>
+                                                            <ColumnDefinition Width="200"/>
+                                                            <ColumnDefinition Width="100"/>
+                                                            <ColumnDefinition Width="100"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        
+                                                        <TextBlock Grid.Column="0" Text="3" Margin="10,8"/>
+                                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5">
+                                                            <Border Width="32" Height="32" Background="#F7F7F7" BorderBrush="#CCCCCC" BorderThickness="1">
+                                                                <TextBlock Text="Em" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            </Border>
+                                                            <TextBlock Text="minecraft:emerald" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                                        </StackPanel>
+                                                        <TextBlock Grid.Column="2" Text="4" Margin="10,8"/>
+                                                        <TextBlock Grid.Column="3" Text="26%" Margin="10,8" Foreground="#F39C12"/>
+                                                        <TextBlock Grid.Column="4" Text="None" Margin="10,8" Foreground="#7F8C8D"/>
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                        
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <Button Content="Add Item" 
+                                                    Margin="5,0"
+                                                    Padding="10,5"
+                                                    Background="#3498DB"
+                                                    Foreground="White"/>
+                                            
+                                            <Button Content="Add Empty" 
+                                                    Margin="5,0"
+                                                    Padding="10,5"
+                                                    Background="#95A5A6"
+                                                    Foreground="White"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                                
+                                <!-- Add Pool Button -->
+                                <Button Content="+ Add Another Loot Pool" 
+                                        HorizontalAlignment="Center"
+                                        Margin="0,10,0,20"
+                                        Padding="15,8"
+                                        Background="#7F8C8D"
+                                        Foreground="White"/>
+                                
+                                <!-- Loot Table Visualization -->
+                                <Border Background="White" 
+                                        Margin="0,0,0,20" 
+                                        Padding="15" 
+                                        CornerRadius="5"
+                                        BorderBrush="#BDC3C7"
+                                        BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock Text="Loot Probability Visualization" 
+                                                   FontSize="18" 
+                                                   FontWeight="Bold"
+                                                   Margin="0,0,0,15"/>
+                                        
+                                        <Grid Height="30" Margin="0,10,0,5">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="4*"/>
+                                                <ColumnDefinition Width="2*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <Rectangle Grid.Column="0" Fill="#27AE60"/>
+                                            <Rectangle Grid.Column="1" Fill="#F39C12"/>
+                                            <Rectangle Grid.Column="2" Fill="#E74C3C"/>
+                                        </Grid>
+                                        
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="4*"/>
+                                                <ColumnDefinition Width="2*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <TextBlock Grid.Column="0" Text="Rotten Flesh (67%)" HorizontalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="Emerald (26%)" HorizontalAlignment="Center"/>
+                                            <TextBlock Grid.Column="2" Text="Iron (7%)" HorizontalAlignment="Center"/>
+                                        </Grid>
+                                        
+                                        <TextBlock Name="AverageItemsText" Text="Average items per kill: 1.0" Margin="0,20,0,0"/>
+                                        <TextBlock Text="Chance of at least one item: 100%" Margin="0,5,0,0"/>
+                                        <TextBlock Text="Chance of rare item (iron): 7%" Margin="0,5,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+                    
+                    <!-- JSON Editor Tab -->
+                    <TabItem Header="JSON Editor">
+                        <Grid Margin="10">
+                            <TextBox Name="JsonEditor"
+                                     AcceptsReturn="True" 
+                                     FontFamily="Consolas, Monospace"
+                                     Text="
+                                     {
+  &quot;type&quot;: &quot;minecraft:entity&quot;,
+  &quot;pools&quot;: [
+    {
+      &quot;rolls&quot;: 1,
+      &quot;entries&quot;: [
+        {
+          &quot;type&quot;: &quot;minecraft:item&quot;,
+          &quot;name&quot;: &quot;minecraft:rotten_flesh&quot;,
+          &quot;weight&quot;: 10,
+          &quot;functions&quot;: [
+            {
+              &quot;function&quot;: &quot;minecraft:set_count&quot;,
+              &quot;count&quot;: {
+                &quot;min&quot;: 0,
+                &quot;max&quot;: 2,
+                &quot;type&quot;: &quot;minecraft:uniform&quot;
+              }
+            },
+            {
+              &quot;function&quot;: &quot;minecraft:looting_enchant&quot;,
+              &quot;count&quot;: {
+                &quot;min&quot;: 0,
+                &quot;max&quot;: 1
+              }
+            }
+          ]
+        },
+        {
+          &quot;type&quot;: &quot;minecraft:item&quot;,
+          &quot;name&quot;: &quot;minecraft:iron_ingot&quot;,
+          &quot;weight&quot;: 1,
+          &quot;conditions&quot;: [
+            {
+              &quot;condition&quot;: &quot;minecraft:random_chance_with_looting&quot;,
+              &quot;chance&quot;: 0.025,
+              &quot;looting_multiplier&quot;: 0.01
+            }
+          ]
+        },
+        {
+          &quot;type&quot;: &quot;minecraft:item&quot;,
+          &quot;name&quot;: &quot;minecraft:emerald&quot;,
+          &quot;weight&quot;: 4
+        }
+      ]
+    }
+  ]
+                                     }"/>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>
