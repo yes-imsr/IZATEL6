@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
@@ -9,12 +10,31 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Avalonia.VisualTree;
 
 namespace PMMOEdit;
 
 public partial class LootTableEditor : UserControl
 {
+    private List<string> _rollHistory = new List<string>();
+    private string _datapackPath = "";
+    private string _datapackName = "";
+    
+    public string DatapackPath 
+    { 
+        get => _datapackPath;
+        set => _datapackPath = value;
+    }
+    
+    public string DatapackName 
+    { 
+        get => _datapackName;
+        set => _datapackName = value;
+    }
+    
     // Data models for loot tables
     private class LootItem
     {
@@ -55,11 +75,10 @@ public partial class LootTableEditor : UserControl
     }
     
     // Editor state
-    private string _datapackPath;
-    private string _datapackName;
     private string _currentLootTablePath;
     private LootTable _currentLootTable;
     private bool _hasUnsavedChanges;
+    private const int MaxRollHistoryItems = 50;
     
     // Common Minecraft items for quick selection
     private readonly Dictionary<string, string> _commonItems = new()
@@ -90,8 +109,19 @@ public partial class LootTableEditor : UserControl
     {
         InitializeComponent();
         
+        // Initialize empty datapack path and name
+        _datapackPath = "";
+        _datapackName = "";
+        
         // Set up event handlers
         SetupEventHandlers();
+        
+        // Initially hide the datapack name display
+        var datapackNameDisplay = this.FindControl<TextBlock>("DatapackNameDisplay");
+        if (datapackNameDisplay != null && datapackNameDisplay.Parent is Border border)
+        {
+            border.IsVisible = false;
+        }
         
         // Initialize with a default loot table
         _currentLootTable = new LootTable
@@ -181,6 +211,8 @@ public partial class LootTableEditor : UserControl
         var treeView = this.FindControl<TreeView>("LootTableTreeView");
         if (treeView != null)
         {
+            // Ensure the event handler is attached
+            treeView.SelectionChanged -= TreeView_SelectionChanged; // Remove if already attached
             treeView.SelectionChanged += TreeView_SelectionChanged;
         }
         
@@ -196,26 +228,108 @@ public partial class LootTableEditor : UserControl
             testButton.Click += TestButton_Click;
         }
         
+        // Connect the Roll and Reset buttons in the right sidebar
+        var rollButton = this.FindControl<Button>("RollButton");
+        if (rollButton != null)
+        {
+            // Remove previous handler if exists to avoid duplicates
+            rollButton.Click -= RollButton_Click;
+            rollButton.Click += RollButton_Click;
+        }
+        
+        var resetHistoryButton = this.FindControl<Button>("ResetHistoryButton");
+        if (resetHistoryButton != null)
+        {
+            // Remove previous handler if exists to avoid duplicates
+            resetHistoryButton.Click -= ResetHistoryButton_Click;
+            resetHistoryButton.Click += ResetHistoryButton_Click;
+        }
+        
         var contextTypeComboBox = this.FindControl<ComboBox>("LootTableContextType");
         if (contextTypeComboBox != null)
         {
             contextTypeComboBox.SelectionChanged += ContextType_SelectionChanged;
         }
+        
+        // Connect the Add Item and Add Empty buttons from the visual editor
+        var addItemButton = this.FindControl<Button>("AddItemButton");
+        if (addItemButton != null)
+        {
+            addItemButton.Click -= AddItemButton_Click;
+            addItemButton.Click += AddItemButton_Click;
+        }
+        
+        var addEmptyButton = this.FindControl<Button>("AddEmptyButton");
+        if (addEmptyButton != null)
+        {
+            addEmptyButton.Click -= AddEmptyButton_Click;
+            addEmptyButton.Click += AddEmptyButton_Click;
+        }
+        
+        // As a fallback, also try to find buttons by content if Name lookup fails
+        var allButtons = this.GetVisualDescendants().OfType<Button>().ToList();
+        
+        if (addItemButton == null || addEmptyButton == null)
+        {
+            if (addItemButton == null)
+            {
+                addItemButton = allButtons.FirstOrDefault(b => b.Content?.ToString() == "Add Item");
+                if (addItemButton != null)
+                {
+                    addItemButton.Click -= AddItemButton_Click;
+                    addItemButton.Click += AddItemButton_Click;
+                }
+            }
+            
+            if (addEmptyButton == null)
+            {
+                addEmptyButton = allButtons.FirstOrDefault(b => b.Content?.ToString() == "Add Empty");
+                if (addEmptyButton != null)
+                {
+                    addEmptyButton.Click -= AddEmptyButton_Click;
+                    addEmptyButton.Click += AddEmptyButton_Click;
+                }
+            }
+        }
+        
+        var addLootPoolButton = allButtons.FirstOrDefault(b => b.Content?.ToString() == "+ Add Another Loot Pool");
+        if (addLootPoolButton != null)
+        {
+            addLootPoolButton.Click -= AddLootPoolButton_Click;
+            addLootPoolButton.Click += AddLootPoolButton_Click;
+        }
     }
     
     public void Initialize(string datapackPath, string datapackName)
     {
-        _datapackPath = datapackPath;
-        _datapackName = datapackName;
+        // Validate inputs
+        _datapackPath = string.IsNullOrEmpty(datapackPath) ? "" : datapackPath;
+        _datapackName = string.IsNullOrEmpty(datapackName) ? "" : datapackName;
         
         // Update UI with datapack info
         var datapackNameDisplay = this.FindControl<TextBlock>("DatapackNameDisplay");
         if (datapackNameDisplay != null)
         {
-            datapackNameDisplay.Text = $" - {datapackName}";
+            // Make the datapack name clearly visible
+            datapackNameDisplay.Text = _datapackName;
+            
+            // Make sure the TextBlock's parent Border is visible
+            var parent = datapackNameDisplay.Parent;
+            if (parent is Border border)
+            {
+                border.IsVisible = !string.IsNullOrEmpty(_datapackName);
+            }
         }
         
-        LoadExistingLootTables();
+        // Reset roll history
+        _rollHistory.Clear();
+        UpdateRollHistory();
+        
+        // Only load loot tables if both path and name are valid
+        if (!string.IsNullOrEmpty(_datapackPath) && !string.IsNullOrEmpty(_datapackName))
+        {
+            LoadExistingLootTables();
+        }
     }
     
     private void LoadExistingLootTables()
@@ -225,8 +339,21 @@ public partial class LootTableEditor : UserControl
             return;
         }
         
-        var namespacePath = Path.Combine(_datapackPath, "data", _datapackName.ToLower());
-        var lootTablesPath = Path.Combine(namespacePath, "loot_tables");
+        // Check for empty datapack name
+        if (string.IsNullOrEmpty(_datapackName))
+        {
+            return;
+        }
+        
+        var namespacePath = System.IO.Path.Combine(_datapackPath, "data", _datapackName.ToLower());
+        
+        // Create namespace directory if it doesn't exist
+        if (!Directory.Exists(namespacePath))
+        {
+            Directory.CreateDirectory(namespacePath);
+        }
+        
+        var lootTablesPath = System.IO.Path.Combine(namespacePath, "loot_tables");
         
         if (!Directory.Exists(lootTablesPath))
         {
@@ -236,43 +363,87 @@ public partial class LootTableEditor : UserControl
         var treeView = this.FindControl<TreeView>("LootTableTreeView");
         if (treeView != null)
         {
+            // Remember current selection path if any
+            string currentSelectedPath = null;
+            if (treeView.SelectedItem is TreeViewItem selectedItem && selectedItem.Tag is string path)
+            {
+                currentSelectedPath = path;
+            }
+            
             treeView.Items.Clear();
             
             // Entity loot tables
-            var entityLootTablesPath = Path.Combine(lootTablesPath, "entities");
+            var entityLootTablesPath = System.IO.Path.Combine(lootTablesPath, "entities");
             AddLootTableCategory(treeView, "Entity Loot Tables", entityLootTablesPath);
             
             // Chest loot tables
-            var chestLootTablesPath = Path.Combine(lootTablesPath, "chests");
+            var chestLootTablesPath = System.IO.Path.Combine(lootTablesPath, "chests");
             AddLootTableCategory(treeView, "Chest Loot Tables", chestLootTablesPath);
             
             // Block loot tables
-            var blockLootTablesPath = Path.Combine(lootTablesPath, "blocks");
+            var blockLootTablesPath = System.IO.Path.Combine(lootTablesPath, "blocks");
             AddLootTableCategory(treeView, "Block Loot Tables", blockLootTablesPath);
+            
+            // If we had a selection, try to restore it
+            if (!string.IsNullOrEmpty(currentSelectedPath))
+            {
+                foreach (var categoryItem in treeView.Items)
+                {
+                    if (categoryItem is TreeViewItem category)
+                    {
+                        category.IsExpanded = true;
+                        foreach (var fileItem in category.Items)
+                        {
+                            if (fileItem is TreeViewItem file && 
+                                file.Tag is string filePath && 
+                                filePath == currentSelectedPath)
+                            {
+                                treeView.SelectedItem = file;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     
     private void AddLootTableCategory(TreeView treeView, string categoryName, string path)
     {
+        if (treeView == null || string.IsNullOrEmpty(path))
+        {
+            return;
+        }
+        
         var category = new TreeViewItem { Header = categoryName, IsExpanded = true };
         
-        if (Directory.Exists(path))
+        try
         {
-            var files = Directory.GetFiles(path, "*.json");
-            foreach (var file in files)
+            if (Directory.Exists(path))
             {
-                category.Items.Add(new TreeViewItem 
-                { 
-                    Header = Path.GetFileName(file),
-                    Tag = file // Store the full file path for later use
-                });
+                var files = Directory.GetFiles(path, "*.json");
+                foreach (var file in files)
+                {
+                    category.Items.Add(new TreeViewItem 
+                    { 
+                        Header = System.IO.Path.GetFileName(file),
+                        Tag = file // Store the full file path for later use
+                    });
+                }
+            }
+            else
+            {
+                // Create directory safely
+                Directory.CreateDirectory(path);
             }
         }
-        else
+        catch (Exception ex)
         {
-            Directory.CreateDirectory(path);
+            Console.WriteLine($"Error accessing directory {path}: {ex.Message}");
+            // Continue without crashing - user will see an empty category
         }
         
+        // Always add the "Add New" item
         category.Items.Add(new TreeViewItem { Header = "+ Add New...", Tag = "add_new" });
         treeView.Items.Add(category);
     }
@@ -283,23 +454,78 @@ public partial class LootTableEditor : UserControl
         {
             _currentLootTablePath = filePath;
             
+            // Clear roll history when loading a new loot table
+            _rollHistory.Clear();
+            UpdateRollHistory();
+            
             // Read the JSON file
             string jsonContent = File.ReadAllText(filePath);
-            _currentLootTable = JsonSerializer.Deserialize<LootTable>(jsonContent, new JsonSerializerOptions
+            
+            // Use options that better handle complex JSON structures
+            var options = new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true
-            });
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true,
+                ReadCommentHandling = JsonCommentHandling.Skip,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+            
+            _currentLootTable = JsonSerializer.Deserialize<LootTable>(jsonContent, options);
+            
+            // Calculate percentages after loading
+            UpdateItemChances();
             
             // Update the UI
             UpdateUI();
+            
+            // Make sure a tab is active to show the loot table
+            var editorTabControl = this.FindControl<TabControl>("EditorTabControl");
+            if (editorTabControl != null && editorTabControl.SelectedIndex < 0 && editorTabControl.Items.Count > 0)
+            {
+                editorTabControl.SelectedIndex = 0; // Select the first tab (Visual Editor)
+            }
             
             // Reset unsaved changes flag
             _hasUnsavedChanges = false;
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"Error loading loot table: {ex}");
             await ShowError($"Error loading loot table: {ex.Message}");
         }
+    }
+    
+    private void RollButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_currentLootTable == null)
+            return;
+            
+        Random random = new Random();
+        string result = SimulateLootRoll(random);
+        
+        // Add the result to history with timestamp and color-coding
+        string timestamp = DateTime.Now.ToString("HH:mm:ss");
+        
+        // We'll replace this with a custom RollResult class if we implement rich text later
+        _rollHistory.Add($"[{timestamp}] {result}");
+        
+        // Trim history if it exceeds the maximum size
+        if (_rollHistory.Count > MaxRollHistoryItems)
+        {
+            _rollHistory.RemoveAt(0);
+        }
+        
+        // Update the roll history display
+        UpdateRollHistory();
+    }
+    
+    private void ResetHistoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Clear the roll history
+        _rollHistory.Clear();
+        
+        // Update the roll history display
+        UpdateRollHistory();
     }
     
     private async Task SaveLootTable()
@@ -310,10 +536,22 @@ public partial class LootTableEditor : UserControl
             return;
         }
         
+        if (string.IsNullOrEmpty(_datapackPath) || string.IsNullOrEmpty(_datapackName))
+        {
+            await ShowError("Datapack path or name is not set. Please open a datapack first.");
+            return;
+        }
+        
         try
         {
             // Make sure directory exists
-            string dirPath = Path.GetDirectoryName(_currentLootTablePath);
+            string dirPath = System.IO.Path.GetDirectoryName(_currentLootTablePath);
+            if (string.IsNullOrEmpty(dirPath))
+            {
+                await ShowError("Invalid file path. Unable to determine directory.");
+                return;
+            }
+            
             if (!Directory.Exists(dirPath))
             {
                 Directory.CreateDirectory(dirPath);
@@ -333,10 +571,16 @@ public partial class LootTableEditor : UserControl
             if (titleTextBox != null)
             {
                 string newFileName = titleTextBox.Text.Trim();
-                if (!string.IsNullOrEmpty(newFileName) && !newFileName.Equals(Path.GetFileName(_currentLootTablePath)))
+                if (!string.IsNullOrEmpty(newFileName) && !newFileName.Equals(System.IO.Path.GetFileName(_currentLootTablePath)))
                 {
-                    string fileDirPath = Path.GetDirectoryName(_currentLootTablePath);
-                    string newPath = Path.Combine(fileDirPath, newFileName);
+                    string fileDirPath = System.IO.Path.GetDirectoryName(_currentLootTablePath);
+                    if (string.IsNullOrEmpty(fileDirPath))
+                    {
+                        await ShowError("Invalid file path. Unable to rename file.");
+                        return;
+                    }
+                    
+                    string newPath = System.IO.Path.Combine(fileDirPath, newFileName);
                     
                     if (!newFileName.EndsWith(".json"))
                     {
@@ -376,7 +620,7 @@ public partial class LootTableEditor : UserControl
         var titleTextBox = this.FindControl<TextBox>("LootTableTitleTextBox");
         if (titleTextBox != null && !string.IsNullOrEmpty(_currentLootTablePath))
         {
-            titleTextBox.Text = Path.GetFileName(_currentLootTablePath);
+            titleTextBox.Text = System.IO.Path.GetFileName(_currentLootTablePath);
         }
         
         // Update context type
@@ -403,11 +647,226 @@ public partial class LootTableEditor : UserControl
         // Calculate chances
         UpdateItemChances();
         
+        // Update the loot entries in the UI
+        UpdateLootEntriesUI();
+        
         // Update JSON editor tab
         UpdateJsonEditor();
         
         // Update visualization
         UpdateVisualization();
+    }
+    
+    private void UpdateLootEntriesUI()
+    {
+        if (_currentLootTable?.Pools == null || _currentLootTable.Pools.Count == 0)
+            return;
+            
+        // Find the StackPanel that contains the loot entries
+        var entriesPanel = this.FindControl<StackPanel>("EntriesPanel");
+        
+        // If we can't find it by name, find it through the visual tree
+        if (entriesPanel == null)
+        {
+            var tabControl = this.FindControl<TabControl>("EditorTabControl");
+            if (tabControl == null) return;
+    
+            // First get the ScrollViewer inside the Visual Editor tab
+            var scrollViewer = tabControl.GetVisualDescendants()
+                .OfType<ScrollViewer>()
+                .FirstOrDefault();
+            
+            if (scrollViewer == null) return;
+            
+            // Find the border containing the loot entries table
+            var borders = scrollViewer.GetVisualDescendants().OfType<Border>().ToList();
+            
+            // We need the border that contains the entries table
+            var entriesBorder = borders.FirstOrDefault(b => 
+                b.Child is Grid grid && 
+                grid.RowDefinitions.Count == 2 && 
+                grid.Children.OfType<Grid>().Any(g => g.Background != null && 
+                    (g.Background as SolidColorBrush)?.Color.ToString() == "#FFF5F5F5"));
+            
+            if (entriesBorder != null && entriesBorder.Child is Grid entriesGrid)
+            {
+                // The entries panel is the StackPanel in the second row of the grid
+                entriesPanel = entriesGrid.Children.OfType<StackPanel>().FirstOrDefault();
+            }
+        }
+        
+        if (entriesPanel == null)
+        {
+            // Still couldn't find the entries panel, so create a debug message
+            Console.WriteLine("Could not find EntriesPanel for loot table entries");
+            return;
+        }
+        
+        // Clear and rebuild the entries
+        entriesPanel.Children.Clear();
+        
+        var pool = _currentLootTable.Pools[0]; // For now, work with first pool
+        int index = 0;
+        
+        foreach (var entry in pool.Entries)
+        {
+            var entryGrid = new Grid();
+            
+            entryGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
+            entryGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(200) });
+            entryGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100) });
+            entryGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100) });
+            entryGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+            
+            // Add index
+            var indexText = new TextBlock
+            {
+                Text = (index + 1).ToString(),
+                Margin = new Thickness(10, 8)
+            };
+            Grid.SetColumn(indexText, 0);
+            entryGrid.Children.Add(indexText);
+            
+            // Add item info
+            var itemPanel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Margin = new Thickness(5)
+            };
+            
+            // Icon placeholder
+            var iconBorder = new Border
+            {
+                Width = 32,
+                Height = 32,
+                Background = new SolidColorBrush(Color.Parse("#F7F7F7")),
+                BorderBrush = new SolidColorBrush(Color.Parse("#CCCCCC")),
+                BorderThickness = new Thickness(1)
+            };
+            
+            // Display item short name
+            string shortName = entry.Name.Replace("minecraft:", "");
+            string initials = string.Join("", shortName.Split('_')
+                .Where(s => !string.IsNullOrEmpty(s))
+                .Select(s => char.ToUpper(s[0])));
+            
+            iconBorder.Child = new TextBlock
+            {
+                Text = initials,
+                FontSize = 12,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+            
+            itemPanel.Children.Add(iconBorder);
+            
+            // Item name
+            itemPanel.Children.Add(new TextBlock
+            {
+                Text = entry.Name,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Margin = new Thickness(5, 0, 0, 0)
+            });
+            
+            Grid.SetColumn(itemPanel, 1);
+            entryGrid.Children.Add(itemPanel);
+            
+            // Add weight (editable)
+            var weightPanel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Margin = new Thickness(5)
+            };
+            
+            var weightTextBlock = new TextBlock
+            {
+                Text = entry.Weight.ToString(),
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Margin = new Thickness(5, 0)
+            };
+            
+            var editWeightButton = new Button
+            {
+                Content = "✏️",
+                Padding = new Thickness(3),
+                Tag = index
+            };
+            
+            editWeightButton.Click += async (s, e) =>
+            {
+                if (s is Button btn && btn.Tag is int idx)
+                {
+                    await EditItemWeight(0, idx);
+                }
+            };
+            
+            weightPanel.Children.Add(weightTextBlock);
+            weightPanel.Children.Add(editWeightButton);
+            
+            Grid.SetColumn(weightPanel, 2);
+            entryGrid.Children.Add(weightPanel);
+            
+            // Add chance percentage
+            var chanceBlock = new TextBlock
+            {
+                Text = $"{entry.Chance:F0}%",
+                Margin = new Thickness(10, 8)
+            };
+            
+            // Color based on chance
+            if (entry.Chance >= 50)
+                chanceBlock.Foreground = new SolidColorBrush(Color.Parse("#27AE60")); // Green
+            else if (entry.Chance >= 25)
+                chanceBlock.Foreground = new SolidColorBrush(Color.Parse("#F39C12")); // Orange
+            else
+                chanceBlock.Foreground = new SolidColorBrush(Color.Parse("#E74C3C")); // Red
+            
+            Grid.SetColumn(chanceBlock, 3);
+            entryGrid.Children.Add(chanceBlock);
+            
+            // Add functions buttons or "None" text
+            var functionsPanel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Margin = new Thickness(5)
+            };
+            
+            if (entry.Functions != null && entry.Functions.Count > 0)
+            {
+                foreach (var function in entry.Functions)
+                {
+                    string buttonText = function.Function.Replace("minecraft:", "");
+                    functionsPanel.Children.Add(new Button
+                    {
+                        Content = buttonText,
+                        Padding = new Thickness(5, 2),
+                        Margin = new Thickness(0, 0, 5, 0),
+                        Background = new SolidColorBrush(Color.Parse("#E0E0E0"))
+                    });
+                }
+            }
+            else
+            {
+                functionsPanel.Children.Add(new TextBlock
+                {
+                    Text = "None",
+                    Margin = new Thickness(10, 8),
+                    Foreground = new SolidColorBrush(Color.Parse("#7F8C8D"))
+                });
+            }
+            
+            Grid.SetColumn(functionsPanel, 4);
+            entryGrid.Children.Add(functionsPanel);
+            
+            // Add alternating background for readability
+            if (index % 2 == 1)
+            {
+                entryGrid.Background = new SolidColorBrush(Color.Parse("#F9F9F9"));
+            }
+            
+            entriesPanel.Children.Add(entryGrid);
+            index++;
+        }
     }
     
     private void UpdateItemChances()
@@ -450,20 +909,223 @@ public partial class LootTableEditor : UserControl
         var pool = _currentLootTable.Pools[0];
         var items = pool.Entries.OrderByDescending(e => e.Weight).ToList();
         
-        // In a real implementation, you would dynamically create the visualization
-        // based on the actual loot table items and weights
+        // Update the visualization bar and labels
+        // Find the visualization grid in the UI
+        var tabControl = this.FindControl<TabControl>("EditorTabControl");
+        if (tabControl == null) return;
         
-        // Update average items calculation
-        double averageItems = 1.0; // Default for fixed rolls of 1
-        if (pool.Rolls is int intRolls)
+        var scrollViewer = tabControl.GetVisualDescendants()
+            .OfType<ScrollViewer>()
+            .FirstOrDefault();
+        
+        if (scrollViewer == null) return;
+        
+        // Find the visualization section
+        var visualizationBorder = scrollViewer.GetVisualDescendants()
+            .OfType<Border>()
+            .LastOrDefault(b => b.Child is StackPanel panel && 
+                                panel.Children.OfType<TextBlock>().Any(tb => 
+                                    tb.Text != null && tb.Text.Contains("Loot Probability Visualization")));
+        
+        if (visualizationBorder == null || !(visualizationBorder.Child is StackPanel visualPanel)) return;
+        
+        // Find the grid with rectangles (the bar chart)
+        var barGrid = visualPanel.Children
+            .OfType<Grid>()
+            .FirstOrDefault(g => g.Children.OfType<Rectangle>().Any());
+            
+        // Find the grid with labels
+        var labelGrid = visualPanel.Children
+            .OfType<Grid>()
+            .FirstOrDefault(g => g.Children.OfType<TextBlock>().Any(tb => tb.Text != null && tb.Text.Contains("%")));
+        
+        if (barGrid == null || labelGrid == null) return;
+        
+        // Clear existing visualization
+        barGrid.Children.Clear();
+        barGrid.ColumnDefinitions.Clear();
+        
+        labelGrid.Children.Clear();
+        labelGrid.ColumnDefinitions.Clear();
+        
+        // Create new visualization based on current items
+        int index = 0;
+        double totalWeight = items.Sum(i => i.Weight);
+        
+        // Show up to 5 items at most to keep visualization clean
+        foreach (var item in items.Take(5))
         {
-            averageItems = intRolls;
+            // Calculate column width proportional to weight
+            double proportion = item.Weight / totalWeight;
+            barGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(proportion, GridUnitType.Star) });
+            labelGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(proportion, GridUnitType.Star) });
+            
+            // Choose color based on rarity
+            string colorHex = "#27AE60"; // Default green for common items
+            
+            if (proportion < 0.1) // Rare
+                colorHex = "#E74C3C";
+            else if (proportion < 0.3) // Uncommon
+                colorHex = "#F39C12";
+            
+            // Create rectangle for this item
+            var rect = new Rectangle
+            {
+                Fill = new SolidColorBrush(Color.Parse(colorHex))
+            };
+            Grid.SetColumn(rect, index);
+            barGrid.Children.Add(rect);
+            
+            // Create label for this item
+            string displayName = item.Name.Replace("minecraft:", "");
+            var label = new TextBlock
+            {
+                Text = $"{displayName} ({item.Chance:F0}%)",
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                TextWrapping = TextWrapping.Wrap
+            };
+            Grid.SetColumn(label, index);
+            labelGrid.Children.Add(label);
+            
+            index++;
         }
         
-        var averageItemsText = this.FindControl<TextBlock>("AverageItemsText");
+        // Update statistics texts
+        var averageItemsText = visualPanel.Children
+            .OfType<TextBlock>()
+            .FirstOrDefault(tb => tb.Name == "AverageItemsText" || (tb.Text != null && tb.Text.Contains("Average items")));
+        
         if (averageItemsText != null)
         {
-            averageItemsText.Text = $"Average items per roll: {averageItems}";
+            // Calculate average items per roll
+            double averageItems = 1.0; // Default for fixed rolls of 1
+            if (pool.Rolls is int intRolls)
+            {
+                averageItems = intRolls;
+            }
+            else if (pool.Rolls is JsonElement element)
+            {
+                // Handle min/max range
+                try {
+                    if (element.ValueKind == JsonValueKind.Object && 
+                        element.TryGetProperty("min", out var minElement) && 
+                        element.TryGetProperty("max", out var maxElement))
+                    {
+                        double min = minElement.GetDouble();
+                        double max = maxElement.GetDouble();
+                        averageItems = (min + max) / 2.0;
+                    }
+                    else if (element.ValueKind == JsonValueKind.Number)
+                    {
+                        averageItems = element.GetDouble();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error processing rolls value: {ex.Message}");
+                }
+            }
+            else if (pool.Rolls is Dictionary<string, object> dictRolls)
+            {
+                // Handle dictionary representation from deserialization
+                if (dictRolls.TryGetValue("min", out var min) && dictRolls.TryGetValue("max", out var max))
+                {
+                    if (min is JsonElement minElement && max is JsonElement maxElement)
+                    {
+                        double minVal = minElement.GetDouble();
+                        double maxVal = maxElement.GetDouble();
+                        averageItems = (minVal + maxVal) / 2.0;
+                    }
+                    else
+                    {
+                        double minVal = Convert.ToDouble(min);
+                        double maxVal = Convert.ToDouble(max);
+                        averageItems = (minVal + maxVal) / 2.0;
+                    }
+                }
+            }
+            
+            averageItemsText.Text = $"Average items per roll: {averageItems:F1}";
+        }
+        
+        // Update rare item text if present
+        var rareItemText = visualPanel.Children
+            .OfType<TextBlock>()
+            .FirstOrDefault(tb => tb.Text != null && tb.Text.Contains("Chance of rare item"));
+        
+        if (rareItemText != null && items.Count > 0)
+        {
+            // Find rarest item
+            var rarestItem = items.OrderBy(i => i.Weight).First();
+            string rareName = rarestItem.DisplayName;
+            rareItemText.Text = $"Chance of rare item ({rareName}): {rarestItem.Chance:F0}%";
+        }
+    }
+    
+    private string GetColorForItem(string itemName)
+    {
+        // Common items are green, uncommon are orange, rare are red or purple
+        if (itemName.Contains("rotten_flesh") || 
+            itemName.Contains("dirt") || 
+            itemName.Contains("stone") || 
+            itemName.Contains("cobblestone"))
+        {
+            return "#27AE60"; // Green for common items
+        }
+        else if (itemName.Contains("iron") || 
+                 itemName.Contains("gold") || 
+                 itemName.Contains("emerald") || 
+                 itemName.Contains("redstone"))
+        {
+            return "#F39C12"; // Orange for uncommon items
+        }
+        else if (itemName.Contains("diamond") || 
+                 itemName.Contains("ender_pearl") || 
+                 itemName.Contains("blaze_rod"))
+        {
+            return "#E74C3C"; // Red for rare items
+        }
+        else if (itemName.Contains("enchant") || 
+                 itemName.Contains("golden_apple") || 
+                 itemName.Contains("experience_bottle"))
+        {
+            return "#9B59B6"; // Purple for very rare items
+        }
+        
+        return "white"; // Default color
+    }
+    
+    private void UpdateRollHistory()
+    {
+        var rollHistoryTextBlock = this.FindControl<TextBlock>("RollHistoryTextBlock");
+        if (rollHistoryTextBlock != null)
+        {
+            if (_rollHistory.Count == 0)
+            {
+                rollHistoryTextBlock.Text = "No rolls yet. Click the Roll button to start!";
+            }
+            else
+            {
+                // Show all rolls with the most recent at the top
+                List<string> displayRolls = new List<string>(_rollHistory);
+                displayRolls.Reverse(); // Most recent first
+                
+                // Process each roll to replace color indicators with more visible markers
+                List<string> formattedRolls = new List<string>();
+                foreach (string roll in displayRolls)
+                {
+                    string formattedRoll = roll
+                        .Replace("[COMMON]", "◆ ")     // Simple diamond for common
+                        .Replace("[UNCOMMON]", "★ ")   // Star for uncommon
+                        .Replace("[RARE]", "✧ ")       // Sparkle for rare
+                        .Replace("[EPIC]", "⭐ ");     // Star for epic/very rare
+                    
+                    formattedRolls.Add(formattedRoll);
+                }
+                
+                // Format the roll history
+                rollHistoryTextBlock.Text = string.Join("\n\n", formattedRolls);
+            }
         }
     }
     
@@ -805,15 +1467,15 @@ public partial class LootTableEditor : UserControl
             string fileName = await tcs.Task;
             
             // Create the loot table file path
-            var namespacePath = Path.Combine(_datapackPath, "data", _datapackName.ToLower());
-            var lootTablesPath = Path.Combine(namespacePath, "loot_tables", category);
+            var namespacePath = System.IO.Path.Combine(_datapackPath, "data", _datapackName.ToLower());
+            var lootTablesPath = System.IO.Path.Combine(namespacePath, "loot_tables", category);
             
             if (!Directory.Exists(lootTablesPath))
             {
                 Directory.CreateDirectory(lootTablesPath);
             }
             
-            string filePath = Path.Combine(lootTablesPath, fileName);
+            string filePath = System.IO.Path.Combine(lootTablesPath, fileName);
             
             // Create new default loot table
             _currentLootTable = new LootTable
@@ -847,10 +1509,46 @@ public partial class LootTableEditor : UserControl
             
             // Refresh tree view
             LoadExistingLootTables();
-        }
-        catch (Exception ex)
-        {
+            
+            // Select the newly created loot table in the tree view
+            SelectLootTableInTreeView(fileName, category);
+                    }
+                    catch (Exception ex)
+                    {
             await ShowError($"Error creating loot table: {ex.Message}");
+                    }
+                }
+                
+                // Helper method to find and select a loot table in the tree view
+                private void SelectLootTableInTreeView(string fileName, string category)
+                {
+                    var treeView = this.FindControl<TreeView>("LootTableTreeView");
+                    if (treeView == null) return;
+                    
+                    // Find the category node
+                    string categoryHeader = category == "entities" ? "Entity Loot Tables" :
+                               category == "chests" ? "Chest Loot Tables" : "Block Loot Tables";
+                               
+                    foreach (var item in treeView.Items)
+                    {
+            if (item is TreeViewItem categoryItem && categoryItem.Header.ToString() == categoryHeader)
+            {
+                // Ensure the category is expanded
+                categoryItem.IsExpanded = true;
+                
+                // Look for the file node
+                foreach (var childItem in categoryItem.Items)
+                {
+                    if (childItem is TreeViewItem fileItem && 
+                        fileItem.Header.ToString() == fileName)
+                    {
+                        // Select this item
+                        treeView.SelectedItem = fileItem;
+                        return;
+                    }
+                }
+                break;
+            }
         }
     }
     
@@ -1071,19 +1769,42 @@ public partial class LootTableEditor : UserControl
         }
         else if (pool.Rolls is JsonElement element)
         {
-            // Handle min/max range rolling
-            if (element.TryGetProperty("min", out var minElement) && 
-                element.TryGetProperty("max", out var maxElement))
+            try
             {
-                int min = minElement.GetInt32();
-                int max = maxElement.GetInt32();
-                rolls = random.Next(min, max + 1);
+                // Handle min/max range rolling
+                if (element.ValueKind == JsonValueKind.Object &&
+                    element.TryGetProperty("min", out var minElement) && 
+                    element.TryGetProperty("max", out var maxElement))
+                {
+                    int min = minElement.GetInt32();
+                    int max = maxElement.GetInt32();
+                    rolls = random.Next(min, max + 1);
+                }
+                else if (element.ValueKind == JsonValueKind.Number)
+                {
+                    // If it's just a number directly
+                    rolls = element.GetInt32();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing rolls value in simulation: {ex.Message}");
+            }
+        }
+        else if (pool.Rolls is Dictionary<string, object> dictRolls)
+        {
+            // Handle dictionary representation
+            if (dictRolls.TryGetValue("min", out var min) && dictRolls.TryGetValue("max", out var max))
+            {
+                int minVal = Convert.ToInt32(min);
+                int maxVal = Convert.ToInt32(max);
+                rolls = random.Next(minVal, maxVal + 1);
             }
         }
         
         // No entries, return empty result
         if (pool.Entries == null || pool.Entries.Count == 0)
-            return "No items";
+            return "No items dropped";
         
         // Calculate total weight
         int totalWeight = pool.Entries.Sum(e => e.Weight);
@@ -1103,6 +1824,10 @@ public partial class LootTableEditor : UserControl
                 {
                     // Item was selected
                     string itemName = entry.DisplayName;
+                    string fullItemName = entry.Name;
+                    
+                    // Get color for this item based on rarity
+                    string itemColor = GetColorForItem(fullItemName);
                     
                     // Determine count (simplified)
                     int count = 1;
@@ -1111,26 +1836,62 @@ public partial class LootTableEditor : UserControl
                     
                     if (setCountFunction != null && setCountFunction.Count != null)
                     {
-                        // Handle various count specifications (simplified)
-                        if (setCountFunction.Count is JsonElement countElement)
+                        try
                         {
-                            if (countElement.TryGetProperty("min", out var minElement) && 
-                                countElement.TryGetProperty("max", out var maxElement))
+                            // Handle various count specifications (simplified)
+                            if (setCountFunction.Count is JsonElement countElement)
                             {
-                                int min = minElement.GetInt32();
-                                int max = maxElement.GetInt32();
-                                count = random.Next(min, max + 1);
+                                if (countElement.ValueKind == JsonValueKind.Object &&
+                                    countElement.TryGetProperty("min", out var minElement) && 
+                                    countElement.TryGetProperty("max", out var maxElement))
+                                {
+                                    int min = minElement.GetInt32();
+                                    int max = maxElement.GetInt32();
+                                    count = random.Next(min, max + 1);
+                                }
+                                else if (countElement.ValueKind == JsonValueKind.Number)
+                                {
+                                    count = countElement.GetInt32();
+                                }
                             }
+                            else if (setCountFunction.Count is Dictionary<string, object> countDict)
+                            {
+                                if (countDict.TryGetValue("min", out var min) && countDict.TryGetValue("max", out var max))
+                                {
+                                    int minVal = Convert.ToInt32(min);
+                                    int maxVal = Convert.ToInt32(max);
+                                    count = random.Next(minVal, maxVal + 1);
+                                }
+                            }
+                            else if (setCountFunction.Count is int fixedCount)
+                            {
+                                count = fixedCount;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error processing count value: {ex.Message}");
                         }
                     }
                     
-                    results.Add($"{count}x {itemName}");
+                    // For Avalonia, we'd normally use TextBlock with Inlines for rich text
+                    // Since we're using a simple TextBlock here, we'll use different symbols
+                    // that are more distinct and less dependent on emoji rendering
+                    string colorIndicator = "";
+                    if (itemColor == "#27AE60") colorIndicator = "[COMMON]"; // Green/common
+                    else if (itemColor == "#F39C12") colorIndicator = "[UNCOMMON]"; // Orange/uncommon
+                    else if (itemColor == "#E74C3C") colorIndicator = "[RARE]"; // Red/rare
+                    else if (itemColor == "#9B59B6") colorIndicator = "[EPIC]"; // Purple/very rare
+                    
+                    results.Add($"{colorIndicator} {count}x {itemName}");
                     break;
                 }
             }
         }
         
-        return results.Count > 0 ? string.Join(", ", results) : "No items";
+        return results.Count > 0 
+            ? $"Rolled {rolls} time(s): {string.Join(", ", results)}" 
+            : "No items dropped";
     }
     
     private void ContextType_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1146,6 +1907,63 @@ public partial class LootTableEditor : UserControl
                 _hasUnsavedChanges = true;
             }
         }
+    }
+    
+    // Button click handlers for item manipulation
+    
+    private async void AddEmptyButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_currentLootTable == null)
+        {
+            await ShowError("No loot table is currently open.");
+            return;
+        }
+        
+        // Add a default stone item
+        if (_currentLootTable.Pools == null || _currentLootTable.Pools.Count == 0)
+        {
+            _currentLootTable.Pools = new List<LootPool>
+            {
+                new LootPool
+                {
+                    Rolls = 1,
+                    Entries = new List<LootItem>()
+                }
+            };
+        }
+        
+        // Add the item directly with a default weight
+        _currentLootTable.Pools[0].Entries.Add(new LootItem
+        {
+            Type = "minecraft:item",
+            Name = "minecraft:stone",
+            Weight = 1
+        });
+        
+        // Update the UI directly
+        UpdateItemChances();
+        UpdateLootEntriesUI();
+        UpdateVisualization();
+        UpdateJsonEditor();
+        
+        _hasUnsavedChanges = true;
+    }
+    
+    private async void AddItemButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_currentLootTable == null)
+        {
+            await ShowError("No loot table is currently open.");
+            return;
+        }
+        
+        // Show item selection dialog and add the selected item
+        await AddItemToCurrentPool();
+    }
+    
+    private async void AddLootPoolButton_Click(object sender, RoutedEventArgs e)
+    {
+        await AddLootPool();
     }
     
     // Additional methods for item manipulation
@@ -1191,7 +2009,20 @@ public partial class LootTableEditor : UserControl
         
         // Update the UI
         UpdateItemChances();
-        UpdateUI();
+        
+        // Force the UI to update with the new item
+        UpdateLootEntriesUI();
+        
+        // Update the visualization
+        UpdateVisualization();
+        
+        // Update the JSON editor too
+        UpdateJsonEditor();
+        
+        // After adding the item, show a dialog to edit its weight
+        int poolIndex = 0;
+        int itemIndex = _currentLootTable.Pools[0].Entries.Count - 1;
+        await EditItemWeight(poolIndex, itemIndex);
         
         _hasUnsavedChanges = true;
     }
@@ -1446,7 +2277,7 @@ public partial class LootTableEditor : UserControl
         {
             Title = "Edit Item Weight",
             Width = 350,
-            Height = 200,
+            Height = 250,
             WindowStartupLocation = WindowStartupLocation.CenterOwner
         };
         
@@ -1460,6 +2291,15 @@ public partial class LootTableEditor : UserControl
             Text = $"Edit weight for {item.DisplayName}:",
             TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(0, 0, 0, 10)
+        });
+        
+        // Add explanation text
+        panel.Children.Add(new TextBlock
+        {
+            Text = "Higher weight means the item is more likely to be selected. The chance percentage is calculated relative to the total weight of all items.",
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = new SolidColorBrush(Color.Parse("#666666")),
+            Margin = new Thickness(0, 0, 0, 15)
         });
         
         var weightNumeric = new NumericUpDown
@@ -1527,10 +2367,20 @@ public partial class LootTableEditor : UserControl
         var newWeight = await tcs.Task;
         if (newWeight.HasValue)
         {
-            // Update weight and UI
+            // Update weight
             item.Weight = newWeight.Value;
+            
+            // Update all UI components
             UpdateItemChances();
-            UpdateUI();
+            
+            // Force refresh of the entries UI
+            UpdateLootEntriesUI();
+            
+            // Update the visualization with new weights
+            UpdateVisualization();
+            
+            // Also update the JSON editor
+            UpdateJsonEditor();
             
             _hasUnsavedChanges = true;
         }

@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:PMMOEdit"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="PMMOEdit.DataPage">
     <Grid>
@@ -20,19 +21,144 @@
                     Padding="15" 
                     Margin="0,10,0,20">
                 <StackPanel>
-                    <TextBlock Text="Datapack Management" 
-                               FontWeight="Bold" 
-                               FontSize="18"
-                               Margin="0,0,0,10"/>
+                    <Grid>
+                        <TextBlock Text="Datapack Management" 
+                                   FontWeight="Bold" 
+                                   FontSize="18"
+                                   Margin="0,0,0,10"/>
+                        <Button Name="NeedHelpButton"
+                                Content="Need Help?" 
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Padding="10,5"
+                                Background="#6200EE"
+                                Foreground="White"/>
+                    </Grid>
                     <TextBlock Text="Create and manage Minecraft datapacks for custom PMMO configurations."
                                TextWrapping="Wrap"
                                Margin="0,0,0,15"/>
-                    <Button Content="Create New Datapack" 
-                            Name="CreateDatapackButton"
-                            Padding="10,5"
-                            Background="#4CAF50"
-                            Foreground="White"
-                            Margin="0,5,0,10"/>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button Content="Create New Datapack" 
+                                Name="CreateDatapackButton"
+                                Padding="10,5"
+                                Background="#4CAF50"
+                                Foreground="White"
+                                Margin="0,5,0,10"/>
+                        <Button Content="Open Existing Datapack" 
+                                Name="OpenDatapackButton"
+                                Padding="10,5"
+                                Background="#2196F3"
+                                Foreground="White"
+                                Margin="0,5,0,10"/>
+                    </StackPanel>
+                    <TextBlock Name="CurrentDatapackTextBlock" 
+                               Text="No datapack currently open" 
+                               Margin="0,5,0,0"
+                               FontStyle="Italic"
+                               Foreground="#505050"/>
+                </StackPanel>
+            </Border>
+                       
+            <!-- Recent Datapacks Section -->
+            <Border Background="#FFF8E1" 
+                    CornerRadius="5" 
+                    Padding="15" 
+                    Margin="0,10,0,20"
+                    Name="RecentDatapacksBorder">
+                <StackPanel>
+                    <Grid Margin="0,0,0,10">
+                        <TextBlock Text="Recent Datapacks" 
+                                   FontWeight="Bold" 
+                                   FontSize="16"/>
+                        <TextBlock Text="Click on a datapack to open it" 
+                                   FontSize="12"
+                                   Foreground="#666"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                    <ListBox Name="RecentDatapacksListBox" 
+                             MaxHeight="200"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Padding="0,2">
+                        <ListBox.Styles>
+                            <Style Selector="ListBoxItem">
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0,2"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Cursor" Value="Hand"/>
+                            </Style>
+                            <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Opacity" Value="0.9"/>
+                                <Setter Property="RenderTransform" Value="scale(1.01)"/>
+                                <Setter Property="Transitions">
+                                    <Transitions>
+                                        <TransformOperationsTransition Property="RenderTransform" Duration="0.1"/>
+                                    </Transitions>
+                                </Setter>
+                            </Style>
+                        </ListBox.Styles>
+                        <!-- Recent datapacks will be populated here -->
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type local:DatapackInfo}">
+                                <Border Background="#FFFFFF" 
+                                        CornerRadius="4" 
+                                        Padding="10" 
+                                        Margin="0,3"
+                                        BorderBrush="#DDD"
+                                        BorderThickness="1"
+                                        BoxShadow="0 1 3 0 #00000022">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- Datapack Name with badge for type -->
+                                        <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="0">
+                                            <TextBlock Text="{Binding Name}" 
+                                                      FontWeight="Bold" 
+                                                      FontSize="14"
+                                                      VerticalAlignment="Center"/>
+                                            <Border Background="#E3F2FD" 
+                                                    CornerRadius="3" 
+                                                    Padding="5,2" 
+                                                    Margin="8,0,0,0">
+                                                <TextBlock Text="{Binding Type}" 
+                                                           FontSize="11" 
+                                                           Foreground="#1976D2"/>
+                                            </Border>
+                                        </StackPanel>
+                                        
+                                        <!-- Last opened date -->
+                                        <TextBlock Text="{Binding LastOpened, StringFormat='Opened: {0:g}'}" 
+                                                   Foreground="#777" 
+                                                   FontSize="11" 
+                                                   Grid.Column="1"
+                                                   Grid.Row="0"
+                                                   VerticalAlignment="Center"/>
+                                        
+                                        <!-- Path with ellipsis for overflow -->
+                                        <TextBlock Text="{Binding Path}" 
+                                                   Foreground="#555" 
+                                                   FontSize="11"
+                                                   Grid.Column="0"
+                                                   Grid.ColumnSpan="2"
+                                                   Grid.Row="1"
+                                                   Margin="0,5,0,0"
+                                                   TextWrapping="NoWrap"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   ToolTip.Tip="{Binding Path}"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
                 </StackPanel>
             </Border>
                        

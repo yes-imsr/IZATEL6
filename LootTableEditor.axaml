@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:Avalonia.Controls"
              xmlns:avalonia="clr-namespace:Avalonia;assembly=Avalonia.Controls"
+             xmlns:xml="http://www.w3.org/XML/1998/namespace"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
              x:Class="PMMOEdit.LootTableEditor">
     <UserControl.Styles>
@@ -24,16 +25,34 @@
         <!-- Top Bar with Title and Help Button -->
         <Grid Grid.Row="0" Background="Black" Height="60">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
-            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0">
-                <TextBlock Text="Loot Table Editor" FontSize="22" FontWeight="Bold" Foreground="White"/>
-                <TextBlock Name="DatapackNameDisplay" Text=" - My Datapack" FontSize="18" Foreground="#BDC3C7" Margin="5,0,0,0"/>
-            </StackPanel>
+            <TextBlock Grid.Column="0" 
+                     Text="Loot Table Editor" 
+                     FontSize="22" 
+                     FontWeight="Bold" 
+                     Foreground="White"
+                     Margin="20,0,0,0"
+                     VerticalAlignment="Center"/>
+                     
+            <Border Grid.Column="1" 
+                    Background="#3498DB" 
+                    CornerRadius="4" 
+                    Margin="15,0,0,0" 
+                    Padding="8,4">
+                <TextBlock Name="DatapackNameDisplay" 
+                         Text="" 
+                         FontSize="16" 
+                         FontWeight="Bold"
+                         Foreground="White" 
+                         VerticalAlignment="Center"/>
+            </Border>
             
-            <Button Grid.Column="1" Name="HelpButton" 
+            <Button Grid.Column="3" Name="HelpButton" 
                     Content="Need Help?" 
                     Margin="0,0,20,0"
                     Padding="15,8"
@@ -47,6 +66,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="250"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="250"/>
             </Grid.ColumnDefinitions>
             
             <!-- Left Sidebar - Navigation and File Tree -->
@@ -106,11 +126,56 @@
             </Grid>
             
             <!-- Main Editor Area -->
-            <Grid Grid.Column="1" Background="#ECF0F1">
+            <Border Grid.Column="1" 
+                    Background="#ECF0F1" 
+                    CornerRadius="15,15,0,0" 
+                    ClipToBounds="True">
                 <TabControl Name="EditorTabControl">
+                    <TabControl.Styles>
+                        <!-- Style for the TabControl itself -->
+                        <Style Selector="TabControl">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Background" Value="Transparent" />
+                        </Style>
+                        
+                        <!-- Style for TabItems (the header part) -->
+                        <Style Selector="TabItem">
+                            <Setter Property="FontSize" Value="14" />
+                            <Setter Property="Margin" Value="0,0,4,0" />
+                            <Setter Property="Padding" Value="16,8" />
+                            <Setter Property="Background" Value="#D9D9D9" />
+                            <Setter Property="Foreground" Value="#555555" />
+                            <Setter Property="CornerRadius" Value="8,8,0,0" />
+                        </Style>
+                        
+                        <!-- Style for selected TabItem -->
+                        <Style Selector="TabItem:selected">
+                            <Setter Property="Background" Value="White" />
+                            <Setter Property="Foreground" Value="#333333" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Style>
+                        
+                        <!-- Style for the TabItem header when pointerover -->
+                        <Style Selector="TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                            <Setter Property="Background" Value="#E8E8E8" />
+                        </Style>
+                        
+                        <!-- Style for the TabItem header when selected -->
+                        <Style Selector="TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+                            <Setter Property="Background" Value="White" />
+                        </Style>
+                        
+                        <!-- Style for the content area -->
+                        <Style Selector="TabControl /template/ ContentPresenter#PART_SelectedContentHost">
+                            <Setter Property="Background" Value="White" />
+                            <Setter Property="CornerRadius" Value="8,0,8,8" />
+                            <Setter Property="BorderThickness" Value="1" />
+                            <Setter Property="BorderBrush" Value="#DDDDDD" />
+                        </Style>
+                    </TabControl.Styles>
                     <!-- Visual Editor Tab -->
                     <TabItem Header="Visual Editor">
-                        <ScrollViewer>
+                        <ScrollViewer Background="White">
                             <StackPanel Margin="20">
                                 <!-- Header Section -->
                                 <Grid>
@@ -144,22 +209,17 @@
                                                 Padding="15,8"
                                                 Background="#27AE60"
                                                 Foreground="White"/>
-                                        
-                                        <Button Content="Test" 
-                                                Name="TestButton"
-                                                Margin="5,0"
-                                                Padding="15,8"
-                                                Background="#9B59B6"
-                                                Foreground="White"/>
                                     </StackPanel>
                                 </Grid>
                                 
                                 <Border Background="White" 
                                         Margin="0,20,0,20" 
                                         Padding="15" 
-                                        CornerRadius="5"
+                                        CornerRadius="10,10,5,5"
                                         BorderBrush="#BDC3C7"
-                                        BorderThickness="1">
+                                        BorderThickness="1"
+                                        ClipToBounds="True"
+                                        BoxShadow="0 2 4 0 #00000015">
                                     
                                     <StackPanel>
                                         <TextBlock Text="Loot Pool #1" 
@@ -198,7 +258,7 @@
                                                               Value="1"
                                                               Minimum="1"
                                                               Maximum="100"
-                                                              Width="100"
+                                                              Width="150"
                                                               Margin="10,0,20,0"/>
                                                 
                                                 <RadioButton Grid.Column="2" 
@@ -211,7 +271,7 @@
                                                     <NumericUpDown Value="1"
                                                                   Minimum="0"
                                                                   Maximum="100"
-                                                                  Width="80"
+                                                                  Width="120"
                                                                   IsEnabled="{Binding ElementName=RollsRangeRadio, Path=IsChecked}"/>
                                                     
                                                     <TextBlock Text=" to " VerticalAlignment="Center" Margin="5,0"/>
@@ -219,7 +279,7 @@
                                                     <NumericUpDown Value="3"
                                                                   Minimum="1"
                                                                   Maximum="100"
-                                                                  Width="80"
+                                                                  Width="120"
                                                                   IsEnabled="{Binding ElementName=RollsRangeRadio, Path=IsChecked}"/>
                                                 </StackPanel>
                                             </Grid>
@@ -230,7 +290,7 @@
                                                    FontWeight="Bold"
                                                    Margin="0,0,0,10"/>
                                         
-                                        <Border BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,15">
+                                        <Border BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,15" CornerRadius="6" ClipToBounds="True">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto"/>
@@ -239,6 +299,11 @@
                                                 
                                                 <!-- Table Header -->
                                                 <Grid Grid.Row="0" Background="#F5F5F5">
+                                                    <Grid.Styles>
+                                                        <Style Selector="Grid">
+                                                            <Setter Property="ClipToBounds" Value="True"/>
+                                                        </Style>
+                                                    </Grid.Styles>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="50"/>
                                                         <ColumnDefinition Width="200"/>
@@ -255,7 +320,7 @@
                                                 </Grid>
                                                 
                                                 <!-- Table Rows -->
-                                                <StackPanel Grid.Row="1">
+                                                <StackPanel Grid.Row="1" Name="EntriesPanel">
                                                     <!-- Entry 1 -->
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
@@ -339,12 +404,14 @@
                                         
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                             <Button Content="Add Item" 
+                                                    Name="AddItemButton"
                                                     Margin="5,0"
                                                     Padding="10,5"
                                                     Background="#3498DB"
                                                     Foreground="White"/>
                                             
                                             <Button Content="Add Empty" 
+                                                    Name="AddEmptyButton"
                                                     Margin="5,0"
                                                     Padding="10,5"
                                                     Background="#95A5A6"
@@ -355,6 +422,7 @@
                                 
                                 <!-- Add Pool Button -->
                                 <Button Content="+ Add Another Loot Pool" 
+                                        Name="AddLootPoolButton"
                                         HorizontalAlignment="Center"
                                         Margin="0,10,0,20"
                                         Padding="15,8"
@@ -365,9 +433,11 @@
                                 <Border Background="White" 
                                         Margin="0,0,0,20" 
                                         Padding="15" 
-                                        CornerRadius="5"
+                                        CornerRadius="10,10,5,5"
                                         BorderBrush="#BDC3C7"
-                                        BorderThickness="1">
+                                        BorderThickness="1"
+                                        ClipToBounds="True"
+                                        BoxShadow="0 2 4 0 #00000015">
                                     <StackPanel>
                                         <TextBlock Text="Loot Probability Visualization" 
                                                    FontSize="18" 
@@ -403,69 +473,149 @@
                                         <TextBlock Text="Chance of rare item (iron): 7%" Margin="0,5,0,0"/>
                                     </StackPanel>
                                 </Border>
+                                
+                                <!-- Roll History has been moved to the right panel -->
                             </StackPanel>
                         </ScrollViewer>
                     </TabItem>
                     
                     <!-- JSON Editor Tab -->
                     <TabItem Header="JSON Editor">
-                        <Grid Margin="10">
+                        <Grid Margin="10" Background="White">
                             <TextBox Name="JsonEditor"
-                                     AcceptsReturn="True" 
+                                     AcceptsReturn="True"
+                                     AcceptsTab="True"
                                      FontFamily="Consolas, Monospace"
-                                     Text="
-                                     {
-  &quot;type&quot;: &quot;minecraft:entity&quot;,
-  &quot;pools&quot;: [
-    {
-      &quot;rolls&quot;: 1,
-      &quot;entries&quot;: [
-        {
-          &quot;type&quot;: &quot;minecraft:item&quot;,
-          &quot;name&quot;: &quot;minecraft:rotten_flesh&quot;,
-          &quot;weight&quot;: 10,
-          &quot;functions&quot;: [
-            {
-              &quot;function&quot;: &quot;minecraft:set_count&quot;,
-              &quot;count&quot;: {
-                &quot;min&quot;: 0,
-                &quot;max&quot;: 2,
-                &quot;type&quot;: &quot;minecraft:uniform&quot;
-              }
-            },
-            {
-              &quot;function&quot;: &quot;minecraft:looting_enchant&quot;,
-              &quot;count&quot;: {
-                &quot;min&quot;: 0,
-                &quot;max&quot;: 1
-              }
-            }
-          ]
-        },
-        {
-          &quot;type&quot;: &quot;minecraft:item&quot;,
-          &quot;name&quot;: &quot;minecraft:iron_ingot&quot;,
-          &quot;weight&quot;: 1,
-          &quot;conditions&quot;: [
-            {
-              &quot;condition&quot;: &quot;minecraft:random_chance_with_looting&quot;,
-              &quot;chance&quot;: 0.025,
-              &quot;looting_multiplier&quot;: 0.01
-            }
-          ]
-        },
-        {
-          &quot;type&quot;: &quot;minecraft:item&quot;,
-          &quot;name&quot;: &quot;minecraft:emerald&quot;,
-          &quot;weight&quot;: 4
-        }
-      ]
-    }
-  ]
-                                     }"/>
+                                     FontSize="13"
+                                     TextWrapping="NoWrap"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                     Padding="12"
+                                     LineHeight="20">
+                            {
+                              "type": "minecraft:entity",
+                              "pools": [
+                                {
+                                  "rolls": 1,
+                                  "entries": [
+                                    {
+                                      "type": "minecraft:item",
+                                      "name": "minecraft:rotten_flesh",
+                                      "weight": 10,
+                                      "functions": [
+                                        {
+                                          "function": "minecraft:set_count",
+                                          "count": {
+                                            "min": 0,
+                                            "max": 2,
+                                            "type": "minecraft:uniform"
+                                          }
+                                        },
+                                        {
+                                          "function": "minecraft:looting_enchant",
+                                          "count": {
+                                            "min": 0,
+                                            "max": 1
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "minecraft:item",
+                                      "name": "minecraft:iron_ingot",
+                                      "weight": 1,
+                                      "conditions": [
+                                        {
+                                          "condition": "minecraft:random_chance_with_looting",
+                                          "chance": 0.025,
+                                          "looting_multiplier": 0.01
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "minecraft:item",
+                                      "name": "minecraft:emerald",
+                                      "weight": 4
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                            </TextBox>
                         </Grid>
                     </TabItem>
                 </TabControl>
+                            </Border>
+            
+            <!-- Right Sidebar - Roll History -->
+            <Grid Grid.Column="2" Background="#2C3E50">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Roll History Header -->
+                <StackPanel Grid.Row="0" Margin="15,20,15,10">
+                    <TextBlock Text="Roll History" 
+                              FontSize="18" 
+                              FontWeight="Bold"
+                              Foreground="White"
+                              Margin="0,0,0,10"/>
+                    
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Margin="0,5,0,10">
+                        <Button Content="Roll" 
+                                Name="RollButton"
+                                Padding="15,8"
+                                Background="#9B59B6"
+                                Foreground="White"
+                                Width="100"/>
+                        
+                        <Button Content="Reset" 
+                                Name="ResetHistoryButton"
+                                Padding="10,8"
+                                Background="#E74C3C"
+                                Foreground="White"
+                                Width="100"/>
+                    </StackPanel>
+                </StackPanel>
+                
+                <!-- Roll History Content -->
+                <Border Grid.Row="1" 
+                        Background="#34495E" 
+                        Margin="15,0,15,15" 
+                        CornerRadius="5"
+                        BorderBrush="#566573"
+                        BorderThickness="1">
+                    <ScrollViewer Margin="10">
+                        <StackPanel>
+                            <TextBlock Text="Item rarity indicators:" 
+                                      Foreground="#BDC3C7"
+                                      FontSize="12"
+                                      Margin="5,5,5,10"/>
+                            
+                            <StackPanel Orientation="Horizontal" 
+                                       Margin="5,0,5,10" 
+                                       Spacing="10">
+                                <TextBlock Text="◆ Common" Foreground="#27AE60" FontSize="12"/>
+                                <TextBlock Text="★ Uncommon" Foreground="#F39C12" FontSize="12"/>
+                                <TextBlock Text="✧ Rare" Foreground="#E74C3C" FontSize="12"/>
+                                <TextBlock Text="⭐ Epic" Foreground="#9B59B6" FontSize="12"/>
+                            </StackPanel>
+                            
+                            <Border BorderBrush="#566573" 
+                                   BorderThickness="0,1,0,0" 
+                                   Margin="0,0,0,10"/>
+                            
+                            <TextBlock Name="RollHistoryTextBlock" 
+                                      Foreground="White" 
+                                      Text="No rolls yet. Click the Roll button to start!" 
+                                      TextWrapping="Wrap"
+                                      Margin="5"
+                                      FontSize="14"
+                                      LineHeight="24"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
             </Grid>
         </Grid>
     </Grid>
