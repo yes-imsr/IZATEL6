@@ -17,6 +17,7 @@ The first tool in the Izatel suite is **PMMOEdit**, which focuses on editing con
 -  **New File Initialization** – Pressing "New File" auto-fills default skills into the editor.
 -  **Full Skill Control** – Add, edit, or delete skills with ease.
 -  **TOML Export** – Instantly generate clean, accurate TOML config files ready to drop into your modpack.
+-  **Datapack Creation** - Easily Scaffold datapacks, and visually edit loottables in the editor.
 
 ---
 
