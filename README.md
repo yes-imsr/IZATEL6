@@ -7,9 +7,9 @@ This app exists because managing tons of mods (some essential) is chaos without 
 
 ---
 
-##  First Module: PMMOEdit
+##  First Module: PMMO+
 
-The first tool in the Izatel suite is **PMMOEdit**, which focuses on editing config files for the [Project MMO](https://www.curseforge.com/minecraft/mc-mods/project-mmo) mod.
+The first tool in the Izatel suite is **PMMO+**, which focuses on editing config files for the [Project MMO](https://www.curseforge.com/minecraft/mc-mods/project-mmo) mod.
 
 ###  Current Features
 
